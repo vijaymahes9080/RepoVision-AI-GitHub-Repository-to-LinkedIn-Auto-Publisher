@@ -8,6 +8,10 @@
 
 **RepoVision AI** is a fully cloud-hosted SaaS platform that automatically analyzes public or authorized GitHub repositories using AI, understands project architecture and tech stacks, generates professional LinkedIn content (Posts, Glassmorphism Banners, 10-Slide PDF Carousels, and 30-Second Shorts), and publishes them directly to LinkedIn via official OAuth APIs.
 
+<p align="center">
+  <img src="public/assets/hero_banner.png" alt="RepoVision AI Hero Banner" width="100%" />
+</p>
+
 ---
 
 ## 💡 The Problem & The Solution
@@ -56,11 +60,40 @@
 
 ---
 
-## 🔥 Features & Capabilities
+## 🔥 Visual Feature Showcases
 
-### 1. 🚀 Automated GitHub Repository Analyzer
+### 🎨 1. Visual Studio & 10-Slide PDF Carousel Generator
+Create high-DPI glassmorphism header banners and 10-slide technical PDF carousels tailored for LinkedIn algorithm optimization.
+
+<p align="center">
+  <img src="public/assets/visual_studio.png" alt="RepoVision AI Visual Studio Showcase" width="100%" />
+</p>
+
+---
+
+### 📊 2. AI Post Analytics & Performance Insights
+Track total impressions, views, engagement rates, follower growth, and receive AI recommendations for peak posting times.
+
+<p align="center">
+  <img src="public/assets/analytics_dashboard.png" alt="RepoVision AI Analytics Dashboard" width="100%" />
+</p>
+
+---
+
+### 🎬 3. 30-Second AI Promotional Shorts Studio
+Interactive vertical video player previewing animated code reveals, visual cues, AI voiceover narration transcript, and waveform audio visualizers.
+
+<p align="center">
+  <img src="public/assets/video_shorts.png" alt="RepoVision AI Video Shorts Studio" width="100%" />
+</p>
+
+---
+
+## 🚀 Module Capabilities Breakdown
+
+### 1. 🤖 Automated GitHub Repository Analyzer
 - **AST Tech Stack Extractor:** Automatically identifies 30+ frameworks across Frontend (React, Next.js, Angular, Vue), Backend (FastAPI, Node.js, Django, Spring Boot), Databases (PostgreSQL, MongoDB, Redis), AI/ML (LangChain, OpenAI, PyTorch), and Cloud/DevOps (Docker, AWS, Kubernetes).
-- **Project Problem & Solution Synthesis:** Uses GPT-5.5 to extract core architecture, algorithms, and key innovations.
+- **Project Context Synthesis:** Extracts core problem statements, technical solutions, algorithms, and key innovations.
 
 ### 2. ✍️ LinkedIn AI Content Studio
 - **Post Body Length Toggles:** Short Hook, Medium Post, Deep Dive.
@@ -68,35 +101,24 @@
 - **Hashtag Suite & Prompts:** Contextual hashtag generator + custom DALL-E/Midjourney prompts.
 - **Authentic Live Preview:** Real-time desktop & mobile LinkedIn post preview card with full character counts and social reaction buttons.
 
-### 3. 🎨 Visual Studio (Banners & 10-Slide PDF Carousels)
-- **Header Banner Studio:** 5 modern aesthetic themes (*Glassmorphism Cyber*, *LinkedIn Pro*, *Modern Startup*, *Dark Cyber Obsidian*, *Minimal Corporate*). Customizable typography, star/fork counters, and tech badges.
-- **10-Slide PDF Carousel Studio:** Interactive slide deck generator (Slide 1: Title → Slide 2: Problem → Slide 3: Solution → Slide 4: Architecture → Slide 5: Tech Stack → Slide 6: Key Features → Slide 7: Results → Slide 8: QR Code → Slide 9: Future Scope → Slide 10: Thank You) with instant high-resolution PDF download.
+### 3. 🌐 AI Developer Portfolio Builder
+- Automatically transforms analyzed GitHub repositories into an interactive developer portfolio website with project highlights, star metrics, and JSON data export.
 
-### 4. 🎬 30-Second AI Video Short Studio
-- Storyboard animation preview player with synchronized captions, AI audio voiceover transcript, code reveals, visual cues, and audio waveform visualizers.
+### 4. 🛡️ AI Code Security & Quality Auditor
+- AST security scanner checking for exposed secrets/API keys, CVE dependency vulnerabilities, strict TypeScript compliance, and open-source license verification (Score: 94/100 A+).
 
-### 5. 🌐 AI Developer Portfolio Builder
-- Automatically transforms analyzed GitHub repositories into an interactive, high-converting developer portfolio with project highlights, star metrics, and JSON data export.
-
-### 6. 🛡️ AI Code Security & Quality Auditor
-- AST security scanner checking for exposed secrets/API keys, CVE dependency vulnerabilities, strict TypeScript compliance, and open-source license verification.
-
-### 7. 💬 X (Twitter) 5-Tweet Viral Thread Studio
+### 5. 💬 X (Twitter) 5-Tweet Viral Thread Studio
 - Formats repository launch into a 5-tweet viral thread with emojis, technical breakdown, and repository link.
 
-### 8. 📝 Dev.to / Medium / Hashnode Article Generator
+### 6. 📝 Dev.to / Medium / Hashnode Article Generator
 - Generates long-form technical Markdown articles formatted for Dev.to, Medium, and Hashnode publishing.
 
-### 9. 💼 AI Resume / CV Experience Bullet Generator
+### 7. 💼 AI Resume / CV Experience Bullet Generator
 - Converts repository code & architecture into quantifiable, ATS-friendly resume experience bullets.
 
-### 10. 📅 Official OAuth Scheduler & 1-Click Fallback Queue
+### 8. 📅 Official OAuth Scheduler & 1-Click Fallback Queue
 - Schedule campaigns daily, weekly, or on custom dates.
 - **Compliance Guarantee:** Where LinkedIn API scope restrictions apply, posts are queued for a **1-Click Review & Publish** workflow so your account stays 100% compliant.
-
-### 11. 📊 Analytics & Performance Dashboard
-- Track total impressions, views, engagements, and followers gained.
-- AI Recommendations for optimal posting times and hook improvements.
 
 ---
 
