@@ -1,7 +1,15 @@
-import { GeneratedContent, ProjectAnalysis } from '../types';
+import { GeneratedContent, ProjectAnalysis, User } from '../types';
 
 export const LINKEDIN_CLIENT_ID = '86x9p2q1w3v4u5';
 export const LINKEDIN_REDIRECT_URI = window.location.origin + '/oauth/linkedin/callback';
+
+export interface RealLinkedInAccount {
+  profileName: string;
+  profileUrl: string;
+  headline: string;
+  accessToken: string;
+  isConnected: boolean;
+}
 
 export function getLinkedInOAuthAuthUrl(): string {
   const scope = encodeURIComponent('w_member_social r_liteprofile email');
