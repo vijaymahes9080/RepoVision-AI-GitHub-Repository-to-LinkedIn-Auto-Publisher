@@ -10,6 +10,7 @@ import { BlogStudio } from './components/BlogStudio';
 import { PortfolioView } from './components/PortfolioView';
 import { SecurityView } from './components/SecurityView';
 import { TwitterStudio } from './components/TwitterStudio';
+import { ResumeView } from './components/ResumeView';
 import { SchedulerView } from './components/SchedulerView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { IntegrationsView } from './components/IntegrationsView';
@@ -142,6 +143,10 @@ export function App() {
 
           {activeTab === 'twitter' && (
             <TwitterStudio analysis={activeAnalysis} />
+          )}
+
+          {activeTab === 'resume' && (
+            <ResumeView analysis={activeAnalysis} />
           )}
 
           {activeTab === 'portfolio' && (

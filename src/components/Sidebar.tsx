@@ -12,11 +12,12 @@ import {
   ShieldCheck,
   MessageSquare,
   BookOpen,
+  Briefcase,
   Sparkles,
   ChevronRight
 } from 'lucide-react';
 
-export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'blog' | 'twitter' | 'portfolio' | 'security' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
+export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'blog' | 'twitter' | 'resume' | 'portfolio' | 'security' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -73,6 +74,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: MessageSquare,
       badge: '5 Tweets',
       badgeStyle: 'bg-sky-500/20 text-sky-300',
+    },
+    {
+      id: 'resume' as TabType,
+      label: 'AI Resume Bullets',
+      icon: Briefcase,
+      badge: 'CV Builder',
+      badgeStyle: 'bg-purple-500/20 text-purple-300',
     },
     {
       id: 'portfolio' as TabType,
