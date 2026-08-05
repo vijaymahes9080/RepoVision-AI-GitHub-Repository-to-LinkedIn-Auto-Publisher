@@ -8,11 +8,12 @@ import {
   BarChart3, 
   Plug, 
   KeyRound,
+  Globe,
   Sparkles,
   ChevronRight
 } from 'lucide-react';
 
-export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
+export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'portfolio' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -55,6 +56,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Video,
       badge: '30s AI',
       badgeStyle: 'bg-pink-500/20 text-pink-300',
+    },
+    {
+      id: 'portfolio' as TabType,
+      label: 'AI Portfolio Builder',
+      icon: Globe,
+      badge: 'NEW',
+      badgeStyle: 'bg-emerald-500/20 text-emerald-300',
     },
     {
       id: 'scheduler' as TabType,

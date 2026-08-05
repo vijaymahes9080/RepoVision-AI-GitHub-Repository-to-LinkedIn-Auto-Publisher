@@ -6,12 +6,12 @@ import { RepoAnalyzer } from './components/RepoAnalyzer';
 import { ContentStudio } from './components/ContentStudio';
 import { VisualStudio } from './components/VisualStudio';
 import { VideoStudio } from './components/VideoStudio';
+import { PortfolioView } from './components/PortfolioView';
 import { SchedulerView } from './components/SchedulerView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { IntegrationsView } from './components/IntegrationsView';
 import { AdminView } from './components/AdminView';
 
-import { analyzeGitHubRepository } from './services/githubAnalyzer';
 import { generateLinkedInContent } from './services/aiContentGenerator';
 
 export function App() {
@@ -35,7 +35,6 @@ export function App() {
     },
   });
 
-  // Analysis & Generated Content State (Initialized with default analysis)
   const [activeAnalysis, setActiveAnalysis] = useState<ProjectAnalysis | null>(() => {
     return {
       repoUrl: 'https://github.com/vijaymahes9080/RepoVision-AI-GitHub-Repository-to-LinkedIn-Auto-Publisher',
@@ -79,7 +78,6 @@ export function App() {
     return activeAnalysis ? generateLinkedInContent(activeAnalysis) : null;
   });
 
-  // Handler when user triggers a new analysis
   const handleAnalysisComplete = (analysis: ProjectAnalysis) => {
     setActiveAnalysis(analysis);
     const content = generateLinkedInContent(analysis);
@@ -133,6 +131,10 @@ export function App() {
 
           {activeTab === 'video' && (
             <VideoStudio analysis={activeAnalysis} />
+          )}
+
+          {activeTab === 'portfolio' && (
+            <PortfolioView analysis={activeAnalysis} />
           )}
 
           {activeTab === 'scheduler' && (
