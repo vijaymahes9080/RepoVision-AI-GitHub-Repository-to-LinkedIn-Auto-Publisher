@@ -7,6 +7,7 @@ import { ContentStudio } from './components/ContentStudio';
 import { VisualStudio } from './components/VisualStudio';
 import { VideoStudio } from './components/VideoStudio';
 import { PortfolioView } from './components/PortfolioView';
+import { SecurityView } from './components/SecurityView';
 import { SchedulerView } from './components/SchedulerView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { IntegrationsView } from './components/IntegrationsView';
@@ -135,6 +136,10 @@ export function App() {
 
           {activeTab === 'portfolio' && (
             <PortfolioView analysis={activeAnalysis} />
+          )}
+
+          {activeTab === 'security' && (
+            <SecurityView analysis={activeAnalysis} />
           )}
 
           {activeTab === 'scheduler' && (

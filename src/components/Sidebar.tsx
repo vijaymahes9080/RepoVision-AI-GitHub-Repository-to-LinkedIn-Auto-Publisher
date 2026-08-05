@@ -9,11 +9,12 @@ import {
   Plug, 
   KeyRound,
   Globe,
+  ShieldCheck,
   Sparkles,
   ChevronRight
 } from 'lucide-react';
 
-export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'portfolio' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
+export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'portfolio' | 'security' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -62,6 +63,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'AI Portfolio Builder',
       icon: Globe,
       badge: 'NEW',
+      badgeStyle: 'bg-emerald-500/20 text-emerald-300',
+    },
+    {
+      id: 'security' as TabType,
+      label: 'Security & Quality',
+      icon: ShieldCheck,
+      badge: 'A+',
       badgeStyle: 'bg-emerald-500/20 text-emerald-300',
     },
     {
