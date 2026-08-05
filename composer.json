@@ -1,0 +1,12 @@
+{
+    "name": "vijaymahes/repovision-ai",
+    "description": "RepoVision AI - GitHub Repository to LinkedIn Auto Publisher",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Vijay Mahes",
+            "email": "Vijaypradhap2004@gmail.com"
+        }
+    ],
+    "require": {}
+}
