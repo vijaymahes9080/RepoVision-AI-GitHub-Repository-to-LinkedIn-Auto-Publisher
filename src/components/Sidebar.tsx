@@ -11,11 +11,12 @@ import {
   Globe,
   ShieldCheck,
   MessageSquare,
+  BookOpen,
   Sparkles,
   ChevronRight
 } from 'lucide-react';
 
-export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'portfolio' | 'security' | 'twitter' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
+export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'blog' | 'twitter' | 'portfolio' | 'security' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -58,6 +59,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Video,
       badge: '30s AI',
       badgeStyle: 'bg-pink-500/20 text-pink-300',
+    },
+    {
+      id: 'blog' as TabType,
+      label: 'Dev.to / Medium Blog',
+      icon: BookOpen,
+      badge: 'Markdown',
+      badgeStyle: 'bg-emerald-500/20 text-emerald-300',
     },
     {
       id: 'twitter' as TabType,

@@ -6,6 +6,7 @@ import { RepoAnalyzer } from './components/RepoAnalyzer';
 import { ContentStudio } from './components/ContentStudio';
 import { VisualStudio } from './components/VisualStudio';
 import { VideoStudio } from './components/VideoStudio';
+import { BlogStudio } from './components/BlogStudio';
 import { PortfolioView } from './components/PortfolioView';
 import { SecurityView } from './components/SecurityView';
 import { TwitterStudio } from './components/TwitterStudio';
@@ -133,6 +134,10 @@ export function App() {
 
           {activeTab === 'video' && (
             <VideoStudio analysis={activeAnalysis} />
+          )}
+
+          {activeTab === 'blog' && (
+            <BlogStudio analysis={activeAnalysis} />
           )}
 
           {activeTab === 'twitter' && (
