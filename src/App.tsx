@@ -126,6 +126,7 @@ export function App() {
               user={user}
               onNavigateToVisual={() => setActiveTab('visual')}
               onNavigateToScheduler={() => setActiveTab('scheduler')}
+              analysis={activeAnalysis}
             />
           )}
 

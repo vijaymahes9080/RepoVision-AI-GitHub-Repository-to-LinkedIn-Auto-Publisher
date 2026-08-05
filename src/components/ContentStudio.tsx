@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { GeneratedContent, PostLength, User } from '../types';
+import { GeneratedContent, PostLength, User, ProjectAnalysis } from '../types';
 import { LinkedinIcon } from './Icons';
+import { openDirectLinkedInShare } from '../services/linkedInLiveService';
 import { 
   FileText, 
   Sparkles, 
@@ -16,7 +17,8 @@ import {
   Tag,
   Monitor,
   Smartphone,
-  ImageIcon
+  ImageIcon,
+  ExternalLink
 } from 'lucide-react';
 
 interface ContentStudioProps {
@@ -25,6 +27,7 @@ interface ContentStudioProps {
   user: User;
   onNavigateToVisual: () => void;
   onNavigateToScheduler: () => void;
+  analysis?: ProjectAnalysis | null;
 }
 
 export const ContentStudio: React.FC<ContentStudioProps> = ({
@@ -32,7 +35,8 @@ export const ContentStudio: React.FC<ContentStudioProps> = ({
   onUpdateContent,
   user,
   onNavigateToVisual,
-  onNavigateToScheduler
+  onNavigateToScheduler,
+  analysis
 }) => {
   const [copied, setCopied] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -122,6 +126,12 @@ export const ContentStudio: React.FC<ContentStudioProps> = ({
     setTimeout(() => setCopiedPrompt(false), 2000);
   };
 
+  const handlePublishDirectToLinkedIn = () => {
+    if (analysis) {
+      openDirectLinkedInShare(content, analysis);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fadeIn">
       
@@ -137,7 +147,7 @@ export const ContentStudio: React.FC<ContentStudioProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 flex-wrap gap-y-2">
           <button
             onClick={onNavigateToVisual}
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-semibold text-xs border border-gray-700 transition-all"
@@ -147,12 +157,12 @@ export const ContentStudio: React.FC<ContentStudioProps> = ({
           </button>
 
           <button
-            onClick={onNavigateToScheduler}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-linkedin-blue to-indigo-600 hover:from-linkedin-hover hover:to-indigo-500 text-white font-bold text-xs shadow-neon-linkedin transition-all"
+            onClick={handlePublishDirectToLinkedIn}
+            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-linkedin-blue to-cyan-600 hover:from-linkedin-hover hover:to-cyan-500 text-white font-bold text-xs shadow-neon-linkedin transition-all shrink-0"
           >
             <LinkedinIcon className="w-4 h-4" />
-            <span>Schedule / Publish</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Publish Live to LinkedIn Profile</span>
+            <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

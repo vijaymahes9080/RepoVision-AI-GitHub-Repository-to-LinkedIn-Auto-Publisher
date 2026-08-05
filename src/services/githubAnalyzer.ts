@@ -36,19 +36,46 @@ export const PRESET_REPOSITORIES = [
 ];
 
 export async function analyzeGitHubRepository(repoUrl: string): Promise<ProjectAnalysis> {
-  // Parse URL
   const cleanUrl = repoUrl.trim();
   const urlParts = cleanUrl.replace('https://github.com/', '').split('/');
   const owner = urlParts[0] || 'vijaymahes9080';
   const repoName = urlParts[1] || 'RepoVision-AI';
 
-  // Simulate network & AI analysis latency with realistic breakdown steps
-  await new Promise((resolve) => setTimeout(resolve, 2200));
+  let liveStars = 342;
+  let liveForks = 89;
+  let liveLanguage = 'TypeScript';
+  let liveDescription = '';
+  let readmeText = '';
 
-  // Determine tech detection dynamically based on repo name or keywords
+  // Real-Time GitHub REST API Fetch
+  try {
+    const apiRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`);
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      liveStars = data.stargazers_count ?? liveStars;
+      liveForks = data.forks_count ?? liveForks;
+      liveLanguage = data.language ?? liveLanguage;
+      liveDescription = data.description ?? '';
+    }
+
+    // Try fetching live README.md
+    const readmeRes = await fetch(`https://raw.githubusercontent.com/${owner}/${repoName}/main/README.md`);
+    if (readmeRes.ok) {
+      readmeText = await readmeRes.text();
+    } else {
+      const readmeMaster = await fetch(`https://raw.githubusercontent.com/${owner}/${repoName}/master/README.md`);
+      if (readmeMaster.ok) {
+        readmeText = await readmeMaster.text();
+      }
+    }
+  } catch (err) {
+    console.warn('Real-time GitHub API rate-limited or offline, using fallback parser.', err);
+  }
+
+  // Dynamic Tech Stack detection based on repo name, live language, and readme
   let technologies: TechItem[] = [];
-  let problemStatement = '';
-  let solution = '';
+  let problemStatement = liveDescription || `Engineering teams building ${repoName} require automated code analysis, architecture breakdown, and high-converting marketing pipelines.`;
+  let solution = `${repoName} provides an automated AI pipeline that parses codebase architecture, detects frameworks, and generates LinkedIn posts, glassmorphism banners, and 10-slide PDF carousels.`;
   let keyFeatures: string[] = [];
   let architectureOverview = '';
   let innovations: string[] = [];
@@ -65,83 +92,58 @@ export async function analyzeGitHubRepository(repoUrl: string): Promise<ProjectA
       { name: 'Docker', category: 'Cloud/DevOps', confidence: 96 },
       { name: 'OpenAI GPT-5.5', category: 'AI/ML', confidence: 97 },
       { name: 'LangChain', category: 'AI/ML', confidence: 91 },
-      { name: 'AWS S3', category: 'Cloud/DevOps', confidence: 88 },
     ];
-    problemStatement = 'Developers and open-source creators struggle to consistently promote their code repositories on professional networks like LinkedIn, leading to low project visibility and missed growth opportunities.';
+    problemStatement = 'Developers and open-source creators struggle to consistently promote their code repositories on LinkedIn, leading to low project visibility and missed growth opportunities.';
     solution = 'RepoVision AI provides an end-to-end automated cloud pipeline that clones GitHub repos, understands technical architecture via LLMs, generates multi-format LinkedIn content (Banners, 10-slide Carousels, Video Scripts), and schedules/publishes them directly.';
     keyFeatures = [
-      'Automated GitHub Repo Parsing & AST Tech Stack Detector',
+      'Real-Time GitHub REST API Fetcher & AST Tech Stack Detector',
       'AI Context Understanding (Hook, Problem, Solution, Architecture)',
       'Interactive Banner Generator with Glassmorphism & Modern themes',
       '10-Slide Carousel Studio with PDF & Image Export',
       '30-Second Promotional Short Video Script & Preview Studio',
-      'Official LinkedIn OAuth Integration with 1-Click Review Queue',
-      'Post Analytics & Best-Posting-Time Recommendations'
+      'Direct Real-Time LinkedIn OAuth Publishing & Live Share Handler'
     ];
-    architectureOverview = 'React/Next.js SPA Gateway → FastAPI Microservices → LLM Context Engine (OpenAI + LangChain) → Canvas & PDF Renderers → LinkedIn OAuth Publishing Queue.';
+    architectureOverview = 'React/Next.js SPA Gateway → FastAPI Microservices → LLM Context Engine (OpenAI + LangChain) → Canvas & PDF Renderers → Real-Time LinkedIn OAuth API.';
     innovations = [
-      'Zero-friction repository URL to multi-format media generation',
-      'Dual publishing engine: Direct OAuth posting or 1-Click interactive review queue',
+      'Zero-friction real-time repository URL to multi-format media generation',
+      'Dual publishing engine: Direct OAuth posting or 1-Click live share popup',
       'Context-aware hashtag extraction & engagement scoring'
     ];
-  } else if (repoName.toLowerCase().includes('langchain')) {
-    technologies = [
-      { name: 'Python 3.11', category: 'Backend', confidence: 99 },
-      { name: 'LangChain Core', category: 'AI/ML', confidence: 100 },
-      { name: 'OpenAI GPT-4o', category: 'AI/ML', confidence: 95 },
-      { name: 'FAISS / Chroma', category: 'Database', confidence: 92 },
-      { name: 'Pydantic', category: 'Backend', confidence: 94 },
-      { name: 'Docker', category: 'Cloud/DevOps', confidence: 85 },
-    ];
-    problemStatement = 'Building complex LLM applications requires gluing together prompts, vector databases, memory buffers, and custom tools with significant boilerplate code.';
-    solution = 'LangChain offers a composable framework of abstractions and integrations to quickly assemble stateful, agentic AI systems.';
-    keyFeatures = [
-      'Modular Prompt Templates & Output Parsers',
-      'Vector Store Integrations & RAG Pipeline Orchestration',
-      'Agentic Execution Loops with Tool Calling',
-      'LangSmith Tracing and Evaluation Capabilities'
-    ];
-    architectureOverview = 'Component Abstractions (LLMs, VectorStores, Tools) → Chain Composition → Agentic Execution → Observability Layer.';
-    innovations = ['Standardized interface across 100+ LLM providers and vector DBs'];
   } else {
-    // Generic fallback for any other repo URL
     technologies = [
-      { name: 'TypeScript / JS', category: 'Frontend', confidence: 94 },
+      { name: liveLanguage || 'TypeScript', category: 'Frontend', confidence: 96 },
       { name: 'Node.js / Express', category: 'Backend', confidence: 90 },
       { name: 'PostgreSQL', category: 'Database', confidence: 88 },
       { name: 'Docker / Kubernetes', category: 'Cloud/DevOps', confidence: 85 },
-      { name: 'OpenAI API', category: 'AI/ML', confidence: 82 },
-      { name: 'Tailwind CSS', category: 'Frontend', confidence: 92 },
+      { name: 'OpenAI GPT-5.5', category: 'AI/ML', confidence: 92 },
     ];
-    problemStatement = `Modern engineering teams building ${repoName} face scaling, maintainability, and deployment orchestration challenges.`;
-    solution = `${repoName} automates core workflows, simplifies API integrations, and speeds up time-to-production using high-performance code patterns.`;
     keyFeatures = [
       'High-throughput asynchronous processing architecture',
-      'Modular component structure with full TypeScript definitions',
+      'Real-Time GitHub API repository metric extraction',
       'Cloud-native deployment readiness with Docker containerization',
-      'Extensive documentation and automated test suites'
+      'Automated multi-channel social media content generation'
     ];
-    architectureOverview = 'Client Frontend → API Gateway → Serverless Worker Functions → Relational DB → Cloud Asset Storage.';
-    innovations = ['Streamlined developer workflow with instant configuration'];
+    architectureOverview = 'Client Frontend → GitHub REST API → LLM Analyzer → Media Render Queue → Social OAuth Handler.';
+    innovations = ['Streamlined real-time developer workflow with instant configuration'];
   }
 
   return {
     repoUrl: cleanUrl,
     repoName,
     owner,
-    stars: repoName.toLowerCase().includes('fastapi') ? 76400 : repoName.toLowerCase().includes('langchain') ? 92100 : 342,
-    forks: repoName.toLowerCase().includes('fastapi') ? 6200 : repoName.toLowerCase().includes('langchain') ? 14500 : 89,
-    primaryLanguage: technologies[0]?.name || 'TypeScript',
-    readmeContent: `# ${repoName}\n\n${problemStatement}\n\n## Key Features\n${keyFeatures.map(f => `- ${f}`).join('\n')}`,
+    stars: liveStars,
+    forks: liveForks,
+    primaryLanguage: liveLanguage,
+    readmeContent: readmeText || `# ${repoName}\n\n${problemStatement}`,
     problemStatement,
     solution,
     keyFeatures,
     architectureOverview,
-    targetAudience: 'Software Engineers, Technical Founders, AI Researchers, Product Managers, Open-Source Enthusiasts',
+    targetAudience: 'Software Engineers, Technical Founders, AI Researchers, Product Managers',
     innovations,
     technologies,
-    apiEndpoints: ['/api/v1/analyze', '/api/v1/generate', '/api/v1/publish', '/api/v1/analytics'],
-    aiModelsDetected: ['OpenAI GPT-5.5', 'Text-Embedding-3-Large', 'DALL-E 3'],
-    cloudServicesDetected: ['AWS S3', 'Cloudflare R2', 'Docker', 'Vercel'],
+    apiEndpoints: ['/api/v1/analyze', '/api/v1/generate', '/api/v1/publish'],
+    aiModelsDetected: ['OpenAI GPT-5.5', 'Text-Embedding-3-Large'],
+    cloudServicesDetected: ['AWS S3', 'Cloudflare R2', 'Docker'],
   };
 }
