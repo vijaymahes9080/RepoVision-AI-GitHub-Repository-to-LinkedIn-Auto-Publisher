@@ -8,6 +8,7 @@ import { VisualStudio } from './components/VisualStudio';
 import { VideoStudio } from './components/VideoStudio';
 import { PortfolioView } from './components/PortfolioView';
 import { SecurityView } from './components/SecurityView';
+import { TwitterStudio } from './components/TwitterStudio';
 import { SchedulerView } from './components/SchedulerView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { IntegrationsView } from './components/IntegrationsView';
@@ -132,6 +133,10 @@ export function App() {
 
           {activeTab === 'video' && (
             <VideoStudio analysis={activeAnalysis} />
+          )}
+
+          {activeTab === 'twitter' && (
+            <TwitterStudio analysis={activeAnalysis} />
           )}
 
           {activeTab === 'portfolio' && (

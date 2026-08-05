@@ -10,11 +10,12 @@ import {
   KeyRound,
   Globe,
   ShieldCheck,
+  MessageSquare,
   Sparkles,
   ChevronRight
 } from 'lucide-react';
 
-export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'portfolio' | 'security' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
+export type TabType = 'analyzer' | 'content' | 'visual' | 'video' | 'portfolio' | 'security' | 'twitter' | 'scheduler' | 'analytics' | 'integrations' | 'admin';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -57,6 +58,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Video,
       badge: '30s AI',
       badgeStyle: 'bg-pink-500/20 text-pink-300',
+    },
+    {
+      id: 'twitter' as TabType,
+      label: 'X (Twitter) Thread',
+      icon: MessageSquare,
+      badge: '5 Tweets',
+      badgeStyle: 'bg-sky-500/20 text-sky-300',
     },
     {
       id: 'portfolio' as TabType,
