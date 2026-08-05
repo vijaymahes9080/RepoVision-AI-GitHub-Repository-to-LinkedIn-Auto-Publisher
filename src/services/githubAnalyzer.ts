@@ -37,9 +37,29 @@ export const PRESET_REPOSITORIES = [
 
 export async function analyzeGitHubRepository(repoUrl: string): Promise<ProjectAnalysis> {
   const cleanUrl = repoUrl.trim();
-  const urlParts = cleanUrl.replace('https://github.com/', '').split('/');
-  const owner = urlParts[0] || 'vijaymahes9080';
-  const repoName = urlParts[1] || 'RepoVision-AI';
+  
+  if (!cleanUrl.includes('github.com')) {
+    throw new Error('Invalid GitHub URL format. Please enter a URL starting with https://github.com/username/repository');
+  }
+
+  const urlParts = cleanUrl.replace('https://github.com/', '').replace('http://github.com/', '').split('/');
+  const owner = urlParts[0]?.trim();
+  const repoName = urlParts[1]?.replace('.git', '').trim();
+
+  if (!owner || !repoName) {
+    throw new Error('Invalid GitHub repository structure. Expected https://github.com/owner/repository');
+  }
+
+  // Real-Time GitHub REST API Fetch with HTTP status verification
+  const apiRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`);
+  
+  if (apiRes.status === 404) {
+    throw new Error(`GitHub Repository "${owner}/${repoName}" was not found (HTTP 404). Please verify the owner/repository name and ensure it is public.`);
+  }
+
+  if (!apiRes.ok && apiRes.status !== 403) {
+    throw new Error(`GitHub API error (Status ${apiRes.status}). Could not fetch repository "${owner}/${repoName}".`);
+  }
 
   let liveStars = 342;
   let liveForks = 89;
@@ -47,18 +67,16 @@ export async function analyzeGitHubRepository(repoUrl: string): Promise<ProjectA
   let liveDescription = '';
   let readmeText = '';
 
-  // Real-Time GitHub REST API Fetch
-  try {
-    const apiRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`);
-    if (apiRes.ok) {
-      const data = await apiRes.json();
-      liveStars = data.stargazers_count ?? liveStars;
-      liveForks = data.forks_count ?? liveForks;
-      liveLanguage = data.language ?? liveLanguage;
-      liveDescription = data.description ?? '';
-    }
+  if (apiRes.ok) {
+    const data = await apiRes.json();
+    liveStars = data.stargazers_count ?? 0;
+    liveForks = data.forks_count ?? 0;
+    liveLanguage = data.language ?? 'TypeScript';
+    liveDescription = data.description ?? '';
+  }
 
-    // Try fetching live README.md
+  // Fetch live README.md
+  try {
     const readmeRes = await fetch(`https://raw.githubusercontent.com/${owner}/${repoName}/main/README.md`);
     if (readmeRes.ok) {
       readmeText = await readmeRes.text();
@@ -68,8 +86,8 @@ export async function analyzeGitHubRepository(repoUrl: string): Promise<ProjectA
         readmeText = await readmeMaster.text();
       }
     }
-  } catch (err) {
-    console.warn('Real-time GitHub API rate-limited or offline, using fallback parser.', err);
+  } catch (e) {
+    console.warn('Could not fetch raw README file.', e);
   }
 
   // Dynamic Tech Stack detection based on repo name, live language, and readme

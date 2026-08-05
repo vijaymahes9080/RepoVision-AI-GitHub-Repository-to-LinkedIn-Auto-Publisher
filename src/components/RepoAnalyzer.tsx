@@ -17,7 +17,9 @@ import {
   Database,
   Cloud,
   BrainCircuit,
-  Wrench
+  Wrench,
+  AlertCircle,
+  XCircle
 } from 'lucide-react';
 
 interface RepoAnalyzerProps {
@@ -36,34 +38,39 @@ export const RepoAnalyzer: React.FC<RepoAnalyzerProps> = ({
   );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const steps = [
-    'Cloning Repository via Cloud Git Client...',
-    'Parsing README.md & AST Code Structure...',
+    'Verifying GitHub Repository & Owner Metadata...',
+    'Fetching Live GitHub REST API & README.md File...',
     'Detecting Frameworks, DBs, Cloud Services & AI Models...',
     'Synthesizing Technical Architecture & Campaign Insights...'
   ];
 
   const handleAnalyze = async (urlToAnalyze?: string) => {
     const targetUrl = urlToAnalyze || repoUrl;
-    if (!targetUrl.trim()) return;
+    if (!targetUrl.trim()) {
+      setErrorMessage('Please enter a GitHub repository URL.');
+      return;
+    }
 
+    setErrorMessage(null);
     setIsAnalyzing(true);
     setCurrentStep(0);
 
     const stepInterval = setInterval(() => {
       setCurrentStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
-    }, 500);
+    }, 400);
 
     try {
       const result = await analyzeGitHubRepository(targetUrl);
       clearInterval(stepInterval);
       setIsAnalyzing(false);
       onAnalysisComplete(result);
-    } catch (err) {
+    } catch (err: any) {
       clearInterval(stepInterval);
       setIsAnalyzing(false);
-      console.error(err);
+      setErrorMessage(err.message || 'Failed to fetch GitHub repository. Please check the URL.');
     }
   };
 
@@ -92,7 +99,7 @@ export const RepoAnalyzer: React.FC<RepoAnalyzerProps> = ({
             Analyze Any GitHub Repository & Generate LinkedIn Campaigns
           </h1>
           <p className="text-xs lg:text-sm text-gray-300 leading-relaxed">
-            RepoVision AI clones public or authorized repositories in the cloud, extracts architecture patterns, technologies, and features using GPT-5.5, and creates multi-format LinkedIn assets automatically.
+            RepoVision AI fetches public or authorized repositories in real-time, extracts architecture patterns, technologies, and features using GPT-5.5, and creates multi-format LinkedIn assets automatically.
           </p>
         </div>
       </div>
@@ -111,7 +118,11 @@ export const RepoAnalyzer: React.FC<RepoAnalyzerProps> = ({
             <input
               type="text"
               value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
+              onChange={(e) => {
+                setRepoUrl(e.target.value);
+                if (errorMessage) setErrorMessage(null);
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
               placeholder="https://github.com/username/repository"
               className="w-full pl-11 pr-4 py-3 bg-[#090d16] border border-gray-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono"
             />
@@ -135,6 +146,17 @@ export const RepoAnalyzer: React.FC<RepoAnalyzerProps> = ({
             )}
           </button>
         </div>
+
+        {/* Error Message Display for Invalid Repository or 404 */}
+        {errorMessage && (
+          <div className="p-4 rounded-xl bg-red-950/60 border border-red-500/50 flex items-start space-x-3 text-xs text-red-200 animate-shake">
+            <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <strong className="text-white block font-bold">Analysis Failed – Invalid Repository</strong>
+              <p className="text-red-200 leading-relaxed font-sans">{errorMessage}</p>
+            </div>
+          </div>
+        )}
 
         {/* Preset Quick Test Repositories */}
         <div className="pt-2">
@@ -210,7 +232,7 @@ export const RepoAnalyzer: React.FC<RepoAnalyzerProps> = ({
       )}
 
       {/* Analysis Output View */}
-      {activeAnalysis && !isAnalyzing && (
+      {activeAnalysis && !isAnalyzing && !errorMessage && (
         <div className="space-y-6">
           
           {/* Header Summary Card */}
