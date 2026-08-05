@@ -38,11 +38,11 @@
                              │
                              ▼
                [ AI Multi-Format Generation ]
-             ┌───────────────┼───────────────┐
-             │               │               │
-      [ Post Body & ]   [ Banner & PDF  ]  [ 30s Short ]
-      [ AI Hashtags ]   [  Carousels    ]  [   Video   ]
-             └───────────────┬───────────────┘
+    ┌──────────────┬─────────┼─────────┬──────────────┐
+    │              │         │         │              │
+ [ LinkedIn ]  [ Visual ] [ Shorts ] [ Portfolio ] [ Twitter ]
+ [ Content  ]  [ Banners] [ Video  ] [ Builder   ] [ Thread  ]
+    └──────────────┴─────────┼─────────┴──────────────┘
                              │
                              ▼
             [ Live LinkedIn Desktop/Mobile Preview ]
@@ -75,11 +75,26 @@
 ### 4. 🎬 30-Second AI Video Short Studio
 - Storyboard animation preview player with synchronized captions, AI audio voiceover transcript, code reveals, visual cues, and audio waveform visualizers.
 
-### 5. 📅 Official OAuth Scheduler & 1-Click Fallback Queue
+### 5. 🌐 AI Developer Portfolio Builder
+- Automatically transforms analyzed GitHub repositories into an interactive, high-converting developer portfolio with project highlights, star metrics, and JSON data export.
+
+### 6. 🛡️ AI Code Security & Quality Auditor
+- AST security scanner checking for exposed secrets/API keys, CVE dependency vulnerabilities, strict TypeScript compliance, and open-source license verification.
+
+### 7. 💬 X (Twitter) 5-Tweet Viral Thread Studio
+- Formats repository launch into a 5-tweet viral thread with emojis, technical breakdown, and repository link.
+
+### 8. 📝 Dev.to / Medium / Hashnode Article Generator
+- Generates long-form technical Markdown articles formatted for Dev.to, Medium, and Hashnode publishing.
+
+### 9. 💼 AI Resume / CV Experience Bullet Generator
+- Converts repository code & architecture into quantifiable, ATS-friendly resume experience bullets.
+
+### 10. 📅 Official OAuth Scheduler & 1-Click Fallback Queue
 - Schedule campaigns daily, weekly, or on custom dates.
 - **Compliance Guarantee:** Where LinkedIn API scope restrictions apply, posts are queued for a **1-Click Review & Publish** workflow so your account stays 100% compliant.
 
-### 6. 📊 Analytics & Performance Dashboard
+### 11. 📊 Analytics & Performance Dashboard
 - Track total impressions, views, engagements, and followers gained.
 - AI Recommendations for optimal posting times and hook improvements.
 
