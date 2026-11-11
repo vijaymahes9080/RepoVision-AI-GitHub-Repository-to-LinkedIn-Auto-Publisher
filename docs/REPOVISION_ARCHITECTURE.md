@@ -1,13 +1,14 @@
-# RepoVision architecture (M1)
+# RepoVision architecture (M2)
 
 ## Overview
 
-RepoVision M1 is a two-process application:
+RepoVision M2 is a two-process application:
 
 1. A React + Vite single-page frontend that collects a public GitHub URL, displays analysis and
-   evidence, edits grounded drafts, and renders PNG/PDF exports in the browser.
+   evidence, edits grounded drafts, renders PNG/PDF exports in the browser, and manages a LinkedIn
+   connection.
 2. A FastAPI backend that fetches a bounded GitHub snapshot, performs deterministic analysis, stores
-   evidence and drafts, and exposes a versioned JSON API.
+   evidence and drafts, and publishes a reviewed post to LinkedIn when explicitly configured.
 
 The analysis pipeline is deterministic. A language model is optional and is used only for drafting
 text, never for inventing analysis facts. When no model is configured, drafts come from a
@@ -26,6 +27,7 @@ Browser
                            │     └── architecture.py
                            ├── Evidence collector ──> evidence_items
                            ├── Draft generator ── optional LLM → verifier
+                           ├── LinkedIn OAuth / encrypted tokens / publisher
                            └── SQLAlchemy ──> SQLite (local) / PostgreSQL (target)
 ```
 
@@ -39,11 +41,11 @@ Key modules:
 | `src/api/client.ts` | Typed API client, base URL configuration, error contract |
 | `src/components/RepoAnalyzer.tsx` | URL input, run progress, analysis summary, evidence index |
 | `src/components/ContentStudio.tsx` | Style/length selection, editable draft, claims, verifier, manual copy actions |
-| `src/components/VisualStudio.tsx` | Banner configuration and carousel editing, real PNG/PDF exports |
+| `src/components/VisualStudio.tsx` | Banner configuration, carousel editing, real PNG/PDF exports, confirmed LinkedIn publish |
 | `src/components/SecurityView.tsx` | Static findings, license, dependency scan status, limitations |
-| `src/components/IntegrationsView.tsx` | GitHub/LLM configuration status and LinkedIn preflight |
+| `src/components/IntegrationsView.tsx` | GitHub/LLM configuration, LinkedIn preflight, connection management |
 | `src/components/AdminView.tsx` | Read-only runtime status; no secret inputs |
-| `src/components/DisabledModuleView.tsx` | Explicit "not in M1" panels for planned modules |
+| `src/components/DisabledModuleView.tsx` | Explicit "not yet available" panels for planned modules |
 | `src/services/exportService.ts` | `html-to-image` PNG capture and `jsPDF` multi-page PDF |
 
 The frontend persists only the active analysis run ID in `localStorage`. It never persists secrets,
@@ -76,8 +78,11 @@ must be a public, non-secret URL.
 | `app/services/analysis/orchestrator.py` | Run lifecycle, persistence, analysis result assembly |
 | `app/services/content/drafts.py` | Deterministic drafts, optional LLM prompts, claims |
 | `app/services/content/verifier.py` | Claim and content checks against stored evidence |
+| `app/services/linkedin/crypto.py` | Fernet encryption/decryption for member tokens |
+| `app/services/linkedin/client.py` | Fixed-host OAuth, userinfo, image upload, and post client |
+| `app/services/linkedin/service.py` | OAuth state/PKCE, status, refresh, publish orchestration, audit |
 | `app/services/llm/*` | Provider interface, OpenAI-compatible and Ollama adapters, factory |
-| `migrations/` | Alembic environment and initial schema |
+| `migrations/` | Alembic environment and schema revisions (`0001_initial`, `0002_linkedin`) |
 
 ## API
 
@@ -87,7 +92,7 @@ All routes are under `/api/v1`.
 | --- | --- | --- |
 | GET | `/health` | Liveness and version |
 | GET | `/config/status` | Non-secret runtime status and capability list |
-| GET | `/linkedin/preflight` | Required LinkedIn products, scopes, and M2 steps |
+| GET | `/linkedin/preflight` | Required LinkedIn products, scopes, and setup steps |
 | POST | `/analyses` | Start an analysis; returns `202` with a run ID |
 | GET | `/analyses/{run_id}` | Run status, progress, error, and completed result |
 | GET | `/analyses/{run_id}/evidence` | Stored evidence for a completed run |
@@ -95,6 +100,12 @@ All routes are under `/api/v1`.
 | POST | `/content` | Generate a grounded draft |
 | GET | `/content/{draft_id}` | Retrieve a draft |
 | POST | `/content/verify` | Verify arbitrary text against a run's evidence |
+| POST | `/linkedin/oauth/start` | Start member OAuth with state + PKCE |
+| GET | `/linkedin/oauth/callback` | Exchange the code, encrypt tokens, redirect to the frontend |
+| GET | `/linkedin/status` | Connection readiness and member display name |
+| POST | `/linkedin/disconnect` | Delete the stored connection |
+| POST | `/linkedin/publish` | Confirm, verify, upload the banner, and create the post |
+| GET | `/linkedin/attempts` | Audit rows for publish attempts |
 
 Errors use a stable envelope:
 
@@ -112,8 +123,12 @@ Errors use a stable envelope:
 - `evidence_items`: path, optional symbol and line range, excerpt, category, confidence, commit SHA.
 - `content_drafts`: style, length, title, body, hooks, hashtags, CTA, claims, warnings, generator,
   and model.
-- `fact_checks`: schema exists for persisted verification results; M1 computes verification on
+- `fact_checks`: schema exists for persisted verification results; M2 computes verification on
   request and does not yet write rows here.
+- `linkedin_accounts`: member identity, encrypted access/refresh tokens, scopes, and expiry.
+- `linkedin_oauth_states`: single-use OAuth `state`, encrypted PKCE verifier, redirect URI, and expiry.
+- `linkedin_publish_attempts`: draft ID, status, commentary, image/post URNs, and error details. No
+  tokens are stored here.
 
 Evidence IDs have the form `ev_<commit-prefix>_<counter>` and are stable within a run.
 
@@ -162,7 +177,7 @@ Evidence IDs have the form `ev_<commit-prefix>_<counter>` and are stable within 
    - CVE or vulnerability counts.
 5. Warnings disclose the generator, missing provider, missing feature list, and static-analysis limits.
 
-## Exports
+## Exports and publishing
 
 Exports are client-side only:
 
@@ -171,14 +186,27 @@ Exports are client-side only:
 - Carousel: ten fixed-size 1080×1350 slides are rendered off-screen and captured one by one, then
   assembled into a multi-page PDF with `jsPDF`.
 
-No upload, object storage, or server-side rendering is involved. A failed capture surfaces an error;
-no success state is shown.
+Publishing is server-side and opt-in:
+
+1. `POST /linkedin/oauth/start` creates a single-use state and PKCE verifier, encrypts the verifier, and
+   returns the LinkedIn authorization URL.
+2. The callback exchanges the code, looks up the member, encrypts the access/refresh tokens, and
+   redirects to the frontend with a non-secret status.
+3. `POST /linkedin/publish` requires `confirm=true`, reloads the draft, re-runs the verifier, validates
+   the PNG, initializes the LinkedIn image upload, uploads it, and creates the post.
+4. An audit row moves from `pending` to `published` only after LinkedIn responds; any exception marks
+   it `failed` and is surfaced to the client.
+
+No object storage or server-side rendering is involved. A failed capture surfaces an error; no success
+state is shown.
 
 ## Trust boundaries and non-goals
 
 - Repository code is never cloned, installed, built, or executed.
-- The browser never receives GitHub, LLM, or LinkedIn secrets.
+- The browser never receives GitHub, LLM, LinkedIn client secrets, or member tokens.
 - The GitHub API host is fixed in configuration; users cannot supply arbitrary hosts.
-- LinkedIn publishing is always reported as disabled in M1.
-- M1 has no user accounts, authorization, multi-tenancy, billing, durable queue, or scheduled jobs.
-- M1 does not run dependency vulnerability scans or produce security grades.
+- LinkedIn image upload URLs must be HTTPS and end in `.licdn.com` or `.linkedin.com`.
+- Publishing is disabled unless `LINKEDIN_ENABLED=true` and all credentials plus
+  `TOKEN_ENCRYPTION_KEY` are present.
+- M2 has no user accounts, authorization, multi-tenancy, billing, durable queue, or scheduled jobs.
+- M2 does not run dependency vulnerability scans or produce security grades.

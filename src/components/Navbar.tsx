@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ConfigStatus } from '../types';
-import { Sparkles, Server, Cpu, RefreshCw, Settings2, Lock } from 'lucide-react';
+import { Sparkles, Server, Cpu, RefreshCw, Settings2, Lock, CheckCircle2 } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from './Icons';
 
 interface NavbarProps {
@@ -41,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center space-x-2">
               <span className="font-extrabold text-lg tracking-tight gradient-text">RepoVision</span>
               <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                M1{config ? ` · v${config.app_version}` : ''}
+                M2{config ? ` · v${config.app_version}` : ''}
               </span>
             </div>
             <p className="text-xs text-gray-400 font-medium hidden sm:block">
@@ -89,12 +89,20 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div
             className="hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-linkedin-blue/10 text-linkedin-light text-[11px] font-semibold border border-linkedin-blue/30"
-            title="M1 only reports LinkedIn configuration. It never posts."
+            title={
+              config?.linkedin_publishing_enabled
+                ? 'LinkedIn publishing is enabled. Every post requires explicit confirmation.'
+                : 'LinkedIn publishing is disabled until the server is configured and enabled.'
+            }
           >
             <LinkedinIcon className="w-3.5 h-3.5 text-linkedin-blue" />
             <span className="flex items-center space-x-1">
-              <Lock className="w-3 h-3" />
-              <span>Publishing off</span>
+              {config?.linkedin_publishing_enabled ? (
+                <CheckCircle2 className="w-3 h-3" />
+              ) : (
+                <Lock className="w-3 h-3" />
+              )}
+              <span>{config?.linkedin_publishing_enabled ? 'Publishing on' : 'Publishing off'}</span>
             </span>
           </div>
 

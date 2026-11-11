@@ -168,7 +168,7 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ config }) =>
             <p className="text-[11px] text-gray-400 leading-relaxed">
               {config?.github_token_configured
                 ? 'A GitHub token is configured on the server, which raises the API rate limit. The browser never receives it.'
-                : 'Without a token, GitHub applies the public rate limit. Only public repositories are supported; private repositories require a server-side token and are not part of M1.'}
+                : 'Without a token, GitHub applies the public rate limit. Only public repositories are supported; private repositories require a server-side token and are outside the current scope.'}
             </p>
           </div>
         </div>

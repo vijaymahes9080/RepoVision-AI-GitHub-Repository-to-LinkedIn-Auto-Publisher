@@ -91,6 +91,13 @@ These checks require a running backend and network access:
 8. Export a banner PNG and a carousel PDF; confirm both files download and open.
 9. Reload the page; confirm the active run is restored from `localStorage`.
 10. Open Integrations and Runtime; confirm no secret value is displayed.
+11. With LinkedIn configured, connect a member and confirm the browser returns to Integrations with a
+    success notice and the member name.
+12. Generate a draft, open Visual Studio, check the review box, and publish. Confirm the success panel
+    shows a post URN; verify the post exists on LinkedIn.
+13. Reject a publish attempt by removing confirmation, and confirm unsupported commentary is blocked
+    by the verifier before any LinkedIn call.
+14. Force a LinkedIn API failure and confirm the attempt is shown as failed, not published.
 
 ## Not covered
 
@@ -99,8 +106,11 @@ These checks require a running backend and network access:
 - Live OpenAI-compatible or Ollama generation. Deterministic fallback is tested.
 - PostgreSQL migrations and queries.
 - Docker or container deployment.
-- Browser end-to-end tests and automated inspection of exported PNG/PDF files.
-- LinkedIn OAuth, publishing, scheduling, and analytics, which are not implemented in M1.
+- Browser end-to-end tests and automated inspection of exported PNG/PDF files for M2 (M1 export
+  verification was performed earlier; M2 UI changes have not been re-run in a browser).
+- Live LinkedIn OAuth, image upload, and posting. These are covered by `respx` mocks and require an
+  approved LinkedIn app plus member consent.
+- Scheduling and analytics, which are not implemented.
 - Load, concurrency, and rate-limit behavior under parallel users.
 
 ## Continuous integration

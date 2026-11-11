@@ -197,7 +197,8 @@ export const AdminView: React.FC<AdminViewProps> = ({ config, configError, onRef
 
               <p className="text-[10px] text-gray-500 leading-relaxed">
                 Credential presence is reported as a boolean only. No secret value is returned by the
-                API. LinkedIn publishing stays disabled in M1 even when credentials are present.
+                API. Publishing requires <span className="font-mono">LINKEDIN_ENABLED=true</span>,
+                credentials, and <span className="font-mono">TOKEN_ENCRYPTION_KEY</span>.
               </p>
             </div>
 

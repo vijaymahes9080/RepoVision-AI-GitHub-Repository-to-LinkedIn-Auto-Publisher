@@ -59,9 +59,9 @@ export const SecurityView: React.FC<SecurityViewProps> = ({ analysis }) => {
       <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 text-xs text-amber-200 flex items-start space-x-3">
         <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          M1 does not compute a security grade or score, does not run a dependency vulnerability
-          scan, and does not report CVE counts. Pattern matches are review prompts, not confirmed
-          vulnerabilities.
+          RepoVision does not compute a security grade or score, does not run a dependency
+          vulnerability scan, and does not report CVE counts. Pattern matches are review prompts, not
+          confirmed vulnerabilities.
         </p>
       </div>
 

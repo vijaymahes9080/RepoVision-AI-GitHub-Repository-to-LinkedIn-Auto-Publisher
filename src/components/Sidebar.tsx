@@ -60,13 +60,13 @@ const WORKFLOW_ITEMS: MenuItem[] = [
 ];
 
 const PLANNED_ITEMS: MenuItem[] = [
-  { id: 'video', label: 'Video Short Studio', icon: Video, badge: 'M2', planned: true },
-  { id: 'blog', label: 'Blog Export', icon: BookOpen, badge: 'M2', planned: true },
-  { id: 'twitter', label: 'X Thread Builder', icon: MessageSquare, badge: 'M2', planned: true },
-  { id: 'resume', label: 'Resume Bullets', icon: Briefcase, badge: 'M2', planned: true },
-  { id: 'portfolio', label: 'Portfolio Builder', icon: Globe, badge: 'M2', planned: true },
-  { id: 'scheduler', label: 'Scheduler & Queue', icon: Calendar, badge: 'M2', planned: true },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3, badge: 'M2', planned: true },
+  { id: 'video', label: 'Video Short Studio', icon: Video, badge: 'M3+', planned: true },
+  { id: 'blog', label: 'Blog Export', icon: BookOpen, badge: 'M3', planned: true },
+  { id: 'twitter', label: 'X Thread Builder', icon: MessageSquare, badge: 'M3', planned: true },
+  { id: 'resume', label: 'Resume Bullets', icon: Briefcase, badge: 'Later', planned: true },
+  { id: 'portfolio', label: 'Portfolio Builder', icon: Globe, badge: 'Later', planned: true },
+  { id: 'scheduler', label: 'Scheduler & Queue', icon: Calendar, badge: 'M3', planned: true },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3, badge: 'M3', planned: true },
 ];
 
 const SYSTEM_ITEMS: MenuItem[] = [
@@ -170,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="mt-8 p-3.5 rounded-2xl glass-card border border-indigo-500/20 bg-gradient-to-b from-indigo-950/40 to-slate-900/80 space-y-2">
         <div className="flex items-center space-x-2 text-indigo-300 font-bold text-xs">
           <ShieldCheck className="w-4 h-4 text-cyan-400" />
-          <span>Evidence-first M1</span>
+          <span>Evidence-first M2</span>
         </div>
         <p className="text-[11px] text-gray-400 leading-relaxed">
           Static snapshot analysis. Repository code is never executed, and no engagement or
@@ -190,7 +190,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           />
         </div>
-        <p className="text-[10px] text-gray-500">LinkedIn publishing is disabled in M1.</p>
+        <p className="text-[10px] text-gray-500">
+          {config?.linkedin_publishing_enabled
+            ? 'LinkedIn publishing is enabled; confirmation is required.'
+            : 'LinkedIn publishing is disabled until configured.'}
+        </p>
       </div>
     </aside>
   );

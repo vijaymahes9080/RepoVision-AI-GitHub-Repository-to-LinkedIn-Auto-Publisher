@@ -25,7 +25,7 @@ const PLANNED_MODULES: Record<string, PlannedModule> = {
     title: 'Video Short Studio',
     summary: 'Generate a short video script and a rendered clip from a repository snapshot.',
     reason:
-      'M1 has no video rendering, text-to-speech, or media storage pipeline. A real clip needs a background render worker, object storage, and licensed voice or stock assets.',
+      'RepoVision has no video rendering, text-to-speech, or media storage pipeline. A real clip needs a background render worker, object storage, and licensed voice or stock assets.',
     requirements: [
       'Background render worker with job status and retries',
       'Object storage with signed download URLs',
@@ -39,7 +39,7 @@ const PLANNED_MODULES: Record<string, PlannedModule> = {
     title: 'Blog Export',
     summary: 'Turn a repository snapshot into a long-form article for Dev.to or Medium.',
     reason:
-      'M1 does not integrate with blogging platforms and does not store their API tokens. Both platforms require app registration and token handling that is out of scope for this milestone.',
+      'RepoVision does not integrate with blogging platforms and does not store their API tokens. Both platforms require app registration and token handling that is out of scope for this milestone.',
     requirements: [
       'Platform app registration and approved API access',
       'Server-side token storage with encryption',
@@ -53,7 +53,7 @@ const PLANNED_MODULES: Record<string, PlannedModule> = {
     title: 'X Thread Builder',
     summary: 'Split a repository summary into a multi-post thread and publish it to X.',
     reason:
-      'X API access is a separate paid integration with its own OAuth flow. M1 does not collect X credentials and does not post to any social network.',
+      'X API access is a separate paid integration with its own OAuth flow. RepoVision does not collect X credentials and does not post to X.',
     requirements: [
       'X developer app with approved API tier',
       'OAuth 2.0 with PKCE and server-side token storage',
@@ -61,13 +61,13 @@ const PLANNED_MODULES: Record<string, PlannedModule> = {
       'Rate-limit handling and publish confirmation',
     ],
     alternative:
-      'Use the Content Studio draft and post it manually. M1 does not simulate cross-posting.',
+      'Use the Content Studio draft and post it manually. RepoVision does not simulate cross-posting.',
   },
   resume: {
     title: 'Resume Bullets',
     summary: 'Generate resume bullets describing your contribution to a repository.',
     reason:
-      'Resume bullets assert authorship and impact that a public snapshot cannot verify. M1 blocks first-person ownership claims by design, so this module cannot be implemented honestly yet.',
+      'Resume bullets assert authorship and impact that a public snapshot cannot verify. RepoVision blocks first-person ownership claims by design, so this module cannot be implemented honestly yet.',
     requirements: [
       'Verified contributor identity through GitHub OAuth',
       'Evidence for impact claims, not just file presence',
@@ -81,7 +81,7 @@ const PLANNED_MODULES: Record<string, PlannedModule> = {
     title: 'Portfolio Builder',
     summary: 'Publish a hosted portfolio page generated from analyzed repositories.',
     reason:
-      'M1 has no hosting or deployment target. Generating a page without a real publish destination would repeat the fake-success pattern this milestone removes.',
+      'RepoVision has no hosting or deployment target. Generating a page without a real publish destination would repeat the fake-success pattern this milestone removes.',
     requirements: [
       'A hosting provider and deployment credentials',
       'Page templates with accessibility checks',
@@ -95,7 +95,7 @@ const PLANNED_MODULES: Record<string, PlannedModule> = {
     title: 'Scheduler & Queue',
     summary: 'Queue generated posts and publish them automatically at a chosen time.',
     reason:
-      'Scheduling requires approved LinkedIn Share access, a durable job queue, encrypted token storage, retry handling, and a publish confirmation step. M1 runs analysis in-process and does not publish.',
+      'Scheduling requires a durable job queue, retry handling, and a publish confirmation step. RepoVision publishes synchronously and does not schedule posts.',
     requirements: [
       'Approved LinkedIn Share on LinkedIn access',
       'Durable queue such as Celery or RQ with a broker',
@@ -109,7 +109,7 @@ const PLANNED_MODULES: Record<string, PlannedModule> = {
     title: 'Analytics & Insights',
     summary: 'Track impressions, engagement, and follower growth for published posts.',
     reason:
-      'Analytics require LinkedIn API access, stored post identifiers, and real engagement data. M1 collects none of these, so no charts or growth numbers are shown.',
+      'Analytics require LinkedIn API access, stored post identifiers, and real engagement data. RepoVision collects none of these, so no charts or growth numbers are shown.',
     requirements: [
       'LinkedIn analytics scopes and an approved app',
       'Stored post IDs mapped to published content',
@@ -149,7 +149,7 @@ export const DisabledModuleView: React.FC<DisabledModuleViewProps> = ({
         <Lock className="w-10 h-10 text-gray-500 mx-auto" />
         <h2 className="text-lg font-bold text-white">Module not available</h2>
         <p className="text-xs text-gray-400">
-          This view is not part of M1. No placeholder data is shown.
+          This view is not part of the current build. No placeholder data is shown.
         </p>
       </div>
     );
@@ -166,7 +166,7 @@ export const DisabledModuleView: React.FC<DisabledModuleViewProps> = ({
             <div className="flex items-center space-x-2 flex-wrap gap-y-1">
               <h1 className="text-xl font-extrabold text-white">{module.title}</h1>
               <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/40">
-                Not in M1
+                Not yet available
               </span>
             </div>
             <p className="text-xs text-gray-300 leading-relaxed">{module.summary}</p>
@@ -198,7 +198,7 @@ export const DisabledModuleView: React.FC<DisabledModuleViewProps> = ({
 
       <div className="glass-card p-5 rounded-2xl space-y-2">
         <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-300">
-          What M1 provides instead
+          What RepoVision provides instead
         </h2>
         <p className="text-xs text-gray-300 leading-relaxed">{module.alternative}</p>
       </div>

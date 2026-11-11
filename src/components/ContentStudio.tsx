@@ -162,7 +162,7 @@ export const ContentStudio: React.FC<ContentStudioProps> = ({
           </div>
           <p className="text-xs text-gray-300 mt-1 max-w-2xl">
             Drafts are generated from the selected snapshot and checked against stored evidence.
-            Publishing is manual in M1: copy the post or open LinkedIn yourself.
+            Publish from Visual Studio after connecting LinkedIn, or copy the text manually.
           </p>
         </div>
 
@@ -198,8 +198,8 @@ export const ContentStudio: React.FC<ContentStudioProps> = ({
       <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 text-xs text-amber-200 flex items-start space-x-3">
         <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <p>
-          RepoVision does not connect to LinkedIn in M1 and never reports a post as published. Copy
-          the text, attach the exported banner or PDF yourself, and review before posting.
+          Publishing is optional and requires an explicit confirmation in Visual Studio. Copy the
+          text or open LinkedIn to publish manually if no connection is configured.
         </p>
       </div>
 
@@ -551,7 +551,7 @@ export const ContentStudio: React.FC<ContentStudioProps> = ({
               </div>
 
               <div className="px-4 py-3 flex items-center justify-between text-[10px] text-gray-500 border-b border-gray-800/80">
-                <span>Engagement metrics are not available in M1.</span>
+                <span>Engagement metrics are not available in this build.</span>
                 <span>No simulated activity</span>
               </div>
             </div>

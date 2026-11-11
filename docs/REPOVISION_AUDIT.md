@@ -1,7 +1,9 @@
 # RepoVision audit — Phase Zero and remediation record
 
 Date: 2026-11-11
-Scope: the repository as found before M1 implementation, plus the changes made in M1.
+Scope: the repository as found before M1 implementation, plus the changes made in M1. This document
+is a historical M1 record. M2 (LinkedIn OAuth and controlled publishing) is documented in the roadmap,
+architecture, security, and testing notes.
 
 ## Baseline inventory
 
