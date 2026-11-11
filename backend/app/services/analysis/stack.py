@@ -139,10 +139,38 @@ KNOWN_TECHNOLOGY_NAMES: list[str] = sorted(
         value[0]
         for mapping in (_JS_MAP, _PY_MAP, _GO_MAP, _RUST_MAP, _README_NAMES)
         for value in mapping.values()
+    }
+    | {
+        "Python",
+        "Rust",
+        "JavaScript",
+        "TypeScript",
+        "Java",
+        "Kotlin",
+        "Swift",
+        "Ruby",
+        "PHP",
+        "C#",
+        "HTML",
+        "CSS",
     },
     key=len,
     reverse=True,
 )
+
+_LANGUAGE_EXTENSIONS: dict[str, tuple[str, TechCategory, int]] = {
+    ".py": ("Python", "Backend", 85),
+    ".go": ("Go", "Backend", 85),
+    ".rs": ("Rust", "Backend", 85),
+    ".java": ("Java", "Backend", 85),
+    ".kt": ("Kotlin", "Backend", 85),
+    ".swift": ("Swift", "Backend", 85),
+    ".rb": ("Ruby", "Backend", 85),
+    ".php": ("PHP", "Backend", 85),
+    ".cs": ("C#", "Backend", 85),
+    ".html": ("HTML", "Frontend", 70),
+    ".css": ("CSS", "Frontend", 70),
+}
 
 
 @dataclass
@@ -452,6 +480,32 @@ def _detect_readme_inference(
         acc.add(name, category, 35, evidence_id, inferred=True)
 
 
+def _detect_languages(
+    files: dict[str, str],
+    tree_paths: list[str],
+    collector: EvidenceCollector,
+    acc: TechAccumulator,
+) -> None:
+    seen_languages: set[str] = set()
+    for path in [*files.keys(), *tree_paths]:
+        suffix = PurePosixPath(path).suffix.lower()
+        mapped = _LANGUAGE_EXTENSIONS.get(suffix)
+        if not mapped:
+            continue
+        name, category, confidence = mapped
+        if name in acc.items or name in seen_languages:
+            continue
+        seen_languages.add(name)
+        evidence_id = collector.add(
+            path=path,
+            excerpt=f"{name} source file detected: {path}",
+            category="source",
+            confidence=confidence,
+            content=files.get(path),
+        )
+        acc.add(name, category, confidence, evidence_id)
+
+
 def detect_technologies(
     *,
     files: dict[str, str],
@@ -497,6 +551,7 @@ def detect_technologies(
                 )
                 acc.add("TypeScript", "Tools", 80, evidence_id)
 
+    _detect_languages(files, tree_paths, collector, acc)
     _detect_docker(files, collector, acc)
     _detect_ci(tree_paths, files, collector, acc)
 

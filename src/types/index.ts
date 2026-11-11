@@ -1,132 +1,275 @@
-export interface User {
+export type TechCategory =
+  | 'Frontend'
+  | 'Backend'
+  | 'Database'
+  | 'Cloud/DevOps'
+  | 'AI/ML'
+  | 'Tools';
+
+export interface EvidenceItem {
   id: string;
+  path: string;
+  symbol: string | null;
+  excerpt: string;
+  line_start: number | null;
+  line_end: number | null;
+  category: string;
+  confidence: number;
+  commit_sha: string;
+}
+
+export interface Technology {
   name: string;
-  email: string;
-  avatarUrl: string;
-  connectedGitHub: boolean;
-  connectedLinkedIn: boolean;
-  connectedGoogle: boolean;
-  linkedInAccountName?: string;
-  githubUsername?: string;
-  apiTokens: {
-    openaiKey?: string;
-    githubToken?: string;
-    linkedInToken?: string;
+  category: TechCategory;
+  confidence: number;
+  inferred: boolean;
+  evidence_ids: string[];
+}
+
+export interface Feature {
+  title: string;
+  description: string;
+  evidence_ids: string[];
+}
+
+export interface ArchitectureComponent {
+  name: string;
+  role: string;
+  evidence_ids: string[];
+}
+
+export interface Architecture {
+  summary: string;
+  components: ArchitectureComponent[];
+  data_flow: string[];
+  inferred: boolean;
+  evidence_ids: string[];
+}
+
+export interface TestingInfo {
+  frameworks: string[];
+  test_file_count: number;
+  ci_systems: string[];
+  evidence_ids: string[];
+  limitations: string[];
+}
+
+export interface SecurityFinding {
+  id: string;
+  category: string;
+  severity: 'low' | 'medium' | 'high';
+  title: string;
+  description: string;
+  path: string | null;
+  evidence_ids: string[];
+  recommendation: string;
+}
+
+export interface DependencyScan {
+  status: 'not_run' | 'completed' | 'failed';
+  reason: string;
+  vulnerabilities_found: number | null;
+}
+
+export interface SecurityInfo {
+  findings: SecurityFinding[];
+  license: string | null;
+  license_evidence_ids: string[];
+  dependency_scan: DependencyScan;
+  scanned_files: number;
+  limitations: string[];
+}
+
+export interface AnalysisSummary {
+  description: string;
+  problem_statement: string;
+  solution: string;
+  primary_language: string | null;
+  license: string | null;
+}
+
+export interface RepositoryMetadata {
+  owner: string;
+  name: string;
+  url: string;
+  description: string | null;
+  default_branch: string;
+  stars: number;
+  forks: number;
+  language: string | null;
+  license: string | null;
+  private: boolean;
+  archived: boolean;
+  size_kb: number;
+}
+
+export interface SnapshotInfo {
+  commit_sha: string;
+  tree_sha: string;
+  branch: string;
+  file_count: number;
+  analyzed_file_count: number;
+  analyzed_bytes: number;
+  tree_truncated: boolean;
+  fetched_at: string;
+}
+
+export interface AnalysisResult {
+  run_id: string;
+  repo: RepositoryMetadata;
+  snapshot: SnapshotInfo;
+  summary: AnalysisSummary;
+  technologies: Technology[];
+  features: Feature[];
+  architecture: Architecture;
+  testing: TestingInfo;
+  security: SecurityInfo;
+  api_endpoints: string[];
+  evidence: EvidenceItem[];
+  limitations: string[];
+  metrics: {
+    file_count: number;
+    analyzed_file_count: number;
+    analyzed_bytes: number;
+    tree_truncated: boolean;
+  };
+  provenance: {
+    analysis_engine: string;
+    llm_used: boolean;
+    model: string | null;
   };
 }
 
-export interface TechItem {
+export type AnalysisStatus = 'queued' | 'running' | 'completed' | 'failed';
+
+export interface AnalysisRun {
+  run_id: string;
+  status: AnalysisStatus;
+  stage: string;
+  progress: number;
+  repo_url: string;
+  owner: string;
   name: string;
-  category: 'Frontend' | 'Backend' | 'Database' | 'Cloud/DevOps' | 'AI/ML' | 'Tools';
-  icon?: string;
-  confidence: number; // percentage
+  branch: string | null;
+  commit_sha: string | null;
+  created_at: string;
+  updated_at: string;
+  error: { code: string; message: string } | null;
+  result: AnalysisResult | null;
 }
 
-export interface ProjectAnalysis {
-  repoUrl: string;
-  repoName: string;
-  owner: string;
-  stars: number;
-  forks: number;
-  primaryLanguage: string;
-  readmeContent: string;
-  problemStatement: string;
-  solution: string;
-  keyFeatures: string[];
-  architectureOverview: string;
-  targetAudience: string;
-  innovations: string[];
-  technologies: TechItem[];
-  apiEndpoints: string[];
-  aiModelsDetected: string[];
-  cloudServicesDetected: string[];
+export type ClaimStatus = 'supported' | 'rejected' | 'unverified';
+
+export interface Claim {
+  claim: string;
+  status: ClaimStatus;
+  evidence_ids: string[];
+  reason: string;
 }
+
+export type DraftStyle =
+  | 'professional'
+  | 'technical'
+  | 'storytelling'
+  | 'educational'
+  | 'innovation'
+  | 'career'
+  | 'concise';
 
 export type PostLength = 'short' | 'medium' | 'long';
 
-export interface GeneratedContent {
+export interface ContentDraft {
+  id: string;
+  run_id: string;
+  style: DraftStyle;
+  length: PostLength;
+  status: string;
   title: string;
+  body: string;
   hooks: string[];
-  selectedHookIndex: number;
-  bodyShort: string;
-  bodyMedium: string;
-  bodyLong: string;
   hashtags: string[];
   cta: string;
-  aiImagePrompts: string[];
-  selectedLength: PostLength;
-  customBodyText?: string;
+  claims: Claim[];
+  warnings: string[];
+  generator: string;
+  model: string | null;
+  created_at: string;
 }
 
-export type BannerTheme = 'linkedin-pro' | 'modern-startup' | 'glassmorphism' | 'dark-cyber' | 'minimal-corporate';
+export interface Verification {
+  ok: boolean;
+  claims: Claim[];
+  warnings: string[];
+}
+
+export interface Capability {
+  id: string;
+  label: string;
+  enabled: boolean;
+  reason: string;
+}
+
+export interface ConfigStatus {
+  app_version: string;
+  environment: string;
+  database: string;
+  github_token_configured: boolean;
+  llm_provider: string;
+  llm_configured: boolean;
+  llm_model: string | null;
+  linkedin_configured: boolean;
+  linkedin_publishing_enabled: boolean;
+  linkedin_required_scopes: string[];
+  analysis_engine: string;
+  cors_origins: string[];
+  capabilities: Capability[];
+}
+
+export interface LinkedInPreflight {
+  configured: boolean;
+  publishing_enabled: boolean;
+  required_scopes: string[];
+  required_products: string[];
+  steps: string[];
+  note: string;
+}
+
+export type BannerTheme =
+  | 'linkedin-pro'
+  | 'modern-startup'
+  | 'glassmorphism'
+  | 'dark-cyber'
+  | 'minimal-corporate';
 
 export interface BannerConfig {
   theme: BannerTheme;
   titleText: string;
   subtitleText: string;
   badgeList: string[];
-  primaryColor: string;
-  secondaryColor: string;
   showStats: boolean;
   starCount: number;
   forkCount: number;
   customLogoText: string;
 }
 
+export type CarouselSlideType =
+  | 'title'
+  | 'description'
+  | 'problem'
+  | 'solution'
+  | 'architecture'
+  | 'tech'
+  | 'features'
+  | 'testing'
+  | 'security'
+  | 'limitations';
+
 export interface CarouselSlide {
   id: number;
-  slideType: 'title' | 'problem' | 'solution' | 'architecture' | 'tech' | 'features' | 'results' | 'qrcode' | 'future' | 'thankyou';
+  slideType: CarouselSlideType;
   title: string;
   subtitle: string;
   bodyText: string;
-  bullets?: string[];
-  accentColor?: string;
-  codeSnippet?: string;
-}
-
-export interface VideoScriptSegment {
-  id: number;
-  timeRange: string;
-  headline: string;
-  visualCue: string;
-  narrationText: string;
-  codeSnippet?: string;
-  techBadges?: string[];
-}
-
-export interface ScheduledPost {
-  id: string;
-  repoName: string;
-  postTitle: string;
-  postBody: string;
-  hashtags: string[];
-  scheduledDate: string;
-  scheduledTime: string;
-  status: 'scheduled' | 'published' | 'draft' | 'needs_review';
-  mediaType: 'text' | 'banner' | 'carousel' | 'video';
-  linkedInAccount: string;
-  engagementScoreEstimate: number;
-}
-
-export interface AnalyticsMetric {
-  date: string;
-  views: number;
-  impressions: number;
-  likes: number;
-  comments: number;
-  shares: number;
-  engagementRate: number;
-  followersGained: number;
-}
-
-export interface TopPerformingPost {
-  id: string;
-  title: string;
-  date: string;
-  likes: number;
-  comments: number;
-  shares: number;
-  views: number;
-  engagementRate: number;
-  mediaType: string;
+  bullets: string[];
+  accentColor: string;
 }

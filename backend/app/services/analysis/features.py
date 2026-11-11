@@ -351,7 +351,7 @@ _ROUTE_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
             r"@(?:app|router|bp|blueprint)\.(get|post|put|patch|delete)\(\s*[\"']([^\"']+)[\"']",
             re.I,
         ),
-        "py",
+        "python",
     ),
     (
         "python",
@@ -359,7 +359,7 @@ _ROUTE_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
             r"@(?:app|router|bp|blueprint)\.route\(\s*[\"']([^\"']+)[\"'](?:[^)]*methods\s*=\s*\[([^\]]*)\])?",
             re.I,
         ),
-        "py",
+        "python",
     ),
     (
         "node",

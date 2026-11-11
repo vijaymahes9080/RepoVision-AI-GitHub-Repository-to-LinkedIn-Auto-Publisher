@@ -226,7 +226,7 @@ def verify_text(text: str, result: AnalysisResult) -> VerificationOut:
         if value in evidence_numbers or value.replace(",", "") in evidence_numbers:
             continue
         add_issue(
-            _sentence_for(text, match.start(), match.end()),
+            _sentence_for(scanned_text, match.start(), match.end()),
             f"Number '{value}' does not appear in the stored evidence. Numeric claims must "
             "be traceable to a snapshot excerpt.",
         )

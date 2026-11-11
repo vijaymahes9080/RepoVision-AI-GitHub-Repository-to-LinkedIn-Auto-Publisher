@@ -1,134 +1,186 @@
-import { CarouselSlide, ProjectAnalysis } from '../types';
+import type { AnalysisResult, CarouselSlide } from '../types';
 
-export function generateDefaultCarousel(analysis: ProjectAnalysis): CarouselSlide[] {
-  const repo = analysis.repoName;
-  const topTech = analysis.technologies.slice(0, 4).map((t) => t.name);
+const ACCENTS = [
+  '#6366f1',
+  '#06b6d4',
+  '#ef4444',
+  '#10b981',
+  '#a855f7',
+  '#f59e0b',
+  '#3b82f6',
+  '#ec4899',
+  '#8b5cf6',
+  '#94a3b8',
+];
+
+function shorten(text: string, limit: number): string {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (!clean) return '';
+  if (clean.length <= limit) return clean;
+  return `${clean.slice(0, limit - 1).replace(/[\s,.;:]+$/, '')}…`;
+}
+
+function listOrFallback(items: string[], fallback: string, limit = 6): string[] {
+  if (items.length === 0) return [fallback];
+  return items.slice(0, limit);
+}
+
+export function generateDefaultCarousel(analysis: AnalysisResult): CarouselSlide[] {
+  const { repo, summary, testing, security } = analysis;
+  const repoLabel = `${repo.owner}/${repo.name}`;
+
+  const architectureBullets = listOrFallback(
+    analysis.architecture.components.map((component) => `${component.name}: ${component.role}`),
+    'No application-layer architecture could be inferred from the analyzed manifests.',
+    4,
+  );
+
+  const technologyBullets = listOrFallback(
+    analysis.technologies.map(
+      (technology) => `${technology.name} — ${technology.category} (${technology.confidence}% confidence)`,
+    ),
+    'No technologies were detected from analyzed manifests or configuration.',
+    8,
+  );
+
+  const featureBullets = listOrFallback(
+    analysis.features.map((feature) => feature.title),
+    'The analyzed README did not include a recognisable feature list.',
+    5,
+  );
+
+  const testingBullets: string[] = [];
+  if (testing.test_file_count > 0) {
+    testingBullets.push(`${testing.test_file_count} test file(s) detected in the bounded snapshot.`);
+  } else {
+    testingBullets.push('No test files were detected in the bounded snapshot.');
+  }
+  if (testing.frameworks.length > 0) {
+    testingBullets.push(`Test tooling: ${testing.frameworks.join(', ')}.`);
+  }
+  if (testing.ci_systems.length > 0) {
+    testingBullets.push(`CI configuration: ${testing.ci_systems.join(', ')}.`);
+  }
+  testingBullets.push('Tests were not executed; presence does not prove passing tests.');
+
+  const securityBullets: string[] = [
+    `License: ${security.license ?? 'not detected'}.`,
+    `Dependency vulnerability scan: ${security.dependency_scan.status.replace('_', ' ')}.`,
+    security.findings.length > 0
+      ? `${security.findings.length} static pattern review item(s) require maintainer review.`
+      : 'No static pattern review items were detected in analyzed files.',
+    'This is not a vulnerability assessment or security grade.',
+  ];
+
+  const limitationBullets = listOrFallback(
+    analysis.limitations,
+    'The snapshot was analyzed statically and is subject to the documented limits.',
+    4,
+  );
 
   return [
     {
       id: 1,
       slideType: 'title',
-      title: repo,
-      subtitle: 'GitHub Repository to LinkedIn Auto Content Engine',
-      bodyText: `An AI Cloud SaaS platform powered by ${topTech.slice(0, 2).join(' & ')}.`,
-      bullets: [`⭐ Stars: ${analysis.stars}`, `🌿 Primary Language: ${analysis.primaryLanguage}`, `🚀 Fully Automated SaaS`],
-      accentColor: '#6366f1',
+      title: repoLabel,
+      subtitle: 'Evidence-based repository snapshot',
+      bodyText:
+        shorten(summary.description || repo.description || '', 260) ||
+        'A static snapshot of a public GitHub repository.',
+      bullets: [
+        `Primary language: ${repo.language ?? 'not reported by GitHub'}`,
+        `License: ${summary.license ?? 'not detected'}`,
+        `Snapshot files: ${analysis.metrics.file_count.toLocaleString()} total, ${analysis.metrics.analyzed_file_count} analyzed`,
+      ],
+      accentColor: ACCENTS[0],
     },
     {
       id: 2,
-      slideType: 'problem',
-      title: 'The Challenge',
-      subtitle: 'Why great repos go unnoticed',
-      bodyText: analysis.problemStatement,
-      bullets: [
-        'Writing posts and creating media manually takes 4+ hours per repo',
-        'Lack of engaging graphics lowers LinkedIn feed visibility',
-        'Inconsistent publishing leads to stalled open-source growth',
-      ],
-      accentColor: '#ef4444',
+      slideType: 'description',
+      title: 'What the repository documents',
+      subtitle: 'README and repository metadata',
+      bodyText:
+        shorten(summary.description || repo.description || '', 420) ||
+        'No repository description was available in the analyzed snapshot.',
+      bullets: repo.description ? ['Source: repository description and README content.'] : [],
+      accentColor: ACCENTS[1],
     },
     {
       id: 3,
-      slideType: 'solution',
-      title: 'The Solution',
-      subtitle: `Introducing ${repo}`,
-      bodyText: analysis.solution,
-      bullets: [
-        'Clones & understands codebase using state-of-the-art LLMs',
-        'Auto-generates structured LinkedIn posts, banners & 10-slide carousels',
-        'Direct OAuth scheduling & automated distribution',
-      ],
-      accentColor: '#10b981',
+      slideType: 'problem',
+      title: 'Documented problem',
+      subtitle: 'Only shown when the README states it',
+      bodyText:
+        shorten(summary.problem_statement, 420) ||
+        'The analyzed README did not include an explicit problem statement. This slide intentionally does not invent one.',
+      bullets: summary.problem_statement ? ['Source: README problem section.'] : [],
+      accentColor: ACCENTS[2],
     },
     {
       id: 4,
-      slideType: 'architecture',
-      title: 'System Architecture',
-      subtitle: 'Cloud End-to-End Pipeline',
-      bodyText: analysis.architectureOverview,
-      bullets: [
-        'GitHub API & AST Tech Stack Extractor',
-        'OpenAI GPT-5.5 Context Analysis Engine',
-        'Canvas & HTML5 High-DPI Render Queue',
-        'LinkedIn Official API Publisher & Queue',
-      ],
-      accentColor: '#06b6d4',
-      codeSnippet: `const pipeline = await RepoVision.analyze({
-  url: "${analysis.repoUrl}",
-  depth: "full_ast_and_readme"
-});
-await pipeline.generateMedia();
-await pipeline.publishToLinkedIn();`,
+      slideType: 'solution',
+      title: 'Documented solution',
+      subtitle: 'Only shown when the README states it',
+      bodyText:
+        shorten(summary.solution, 420) ||
+        'The analyzed README did not include an explicit solution section. Review the repository for context rather than relying on an inferred claim.',
+      bullets: summary.solution ? ['Source: README solution section.'] : [],
+      accentColor: ACCENTS[3],
     },
     {
       id: 5,
-      slideType: 'tech',
-      title: 'Technology Stack',
-      subtitle: 'Built with Modern Cloud Technologies',
-      bodyText: 'Detected frameworks and dependencies:',
-      bullets: analysis.technologies.slice(0, 6).map((t) => `${t.name} (${t.category}) – ${t.confidence}% match`),
-      accentColor: '#a855f7',
+      slideType: 'architecture',
+      title: 'Inferred structure',
+      subtitle: 'Manifest-based inference, not runtime observation',
+      bodyText: shorten(analysis.architecture.summary, 360),
+      bullets: architectureBullets,
+      accentColor: ACCENTS[4],
     },
     {
       id: 6,
-      slideType: 'features',
-      title: 'Key Features',
-      subtitle: 'What makes this project unique',
-      bodyText: 'Engineered for scalability and ease of use:',
-      bullets: analysis.keyFeatures.slice(0, 4),
-      accentColor: '#f59e0b',
+      slideType: 'tech',
+      title: 'Technology signals',
+      subtitle: 'Detected from manifests, configuration, and source files',
+      bodyText:
+        'Confidence reflects the strength of the evidence found in the snapshot, not production readiness.',
+      bullets: technologyBullets,
+      accentColor: ACCENTS[5],
     },
     {
       id: 7,
-      slideType: 'results',
-      title: 'Impact & Benchmarks',
-      subtitle: 'Performance & Growth Metrics',
-      bodyText: 'Quantifiable improvements observed during deployment:',
-      bullets: [
-        '⚡ 95% reduction in content creation time (4 hours → 3 minutes)',
-        '📈 3.4x higher post impressions with 10-slide PDF carousels',
-        '🎯 100% compliant with official platform OAuth APIs',
-      ],
-      accentColor: '#ec4899',
+      slideType: 'features',
+      title: 'Documented capabilities',
+      subtitle: 'Extracted from README content',
+      bodyText: 'Feature statements are limited to lines that exist in the analyzed README.',
+      bullets: featureBullets,
+      accentColor: ACCENTS[6],
     },
     {
       id: 8,
-      slideType: 'qrcode',
-      title: 'Repository Link',
-      subtitle: 'Scan to View Code on GitHub',
-      bodyText: `Explore the full source code for ${repo} on GitHub:`,
-      bullets: [
-        `URL: ${analysis.repoUrl}`,
-        'Open Source & Community Driven',
-        'Star the repository to support development!',
-      ],
-      accentColor: '#3b82f6',
+      slideType: 'testing',
+      title: 'Testing & CI signals',
+      subtitle: 'Static detection only',
+      bodyText: 'The snapshot can show test and CI configuration; it cannot show whether tests pass.',
+      bullets: testingBullets,
+      accentColor: ACCENTS[7],
     },
     {
       id: 9,
-      slideType: 'future',
-      title: 'Future Scope',
-      subtitle: 'Roadmap & Upcoming Extensions',
-      bodyText: 'Planned features for upcoming versions:',
-      bullets: [
-        'Multi-platform publishing (X/Twitter, Medium, Dev.to, Hashnode)',
-        'Automated 30-sec AI Voiceover Short Video Generation',
-        'AI Coding Portfolio builder from GitHub commits',
-      ],
-      accentColor: '#8b5cf6',
+      slideType: 'security',
+      title: 'Security review scope',
+      subtitle: 'Pattern matching and license detection',
+      bodyText: shorten(security.limitations[0] ?? '', 260),
+      bullets: securityBullets,
+      accentColor: ACCENTS[8],
     },
     {
       id: 10,
-      slideType: 'thankyou',
-      title: 'Thank You!',
-      subtitle: 'Connect & Collaborate',
-      bodyText: 'Thank you for exploring this project breakdown.',
-      bullets: [
-        '💬 Drop your feedback and thoughts in the comments below!',
-        '⭐ Star the repository on GitHub',
-        '🔔 Follow for more AI & engineering deep dives',
-      ],
-      accentColor: '#10b981',
+      slideType: 'limitations',
+      title: 'Evidence boundary',
+      subtitle: 'What this snapshot cannot prove',
+      bodyText: `Repository: ${repo.url}`,
+      bullets: limitationBullets,
+      accentColor: ACCENTS[9],
     },
   ];
 }
