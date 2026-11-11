@@ -241,8 +241,27 @@ class ConfigStatusResponse(BaseModel):
     llm_configured: bool
     llm_model: str | None = None
     linkedin_configured: bool
+    linkedin_publishing_enabled: bool = False
+    linkedin_required_scopes: list[str] = Field(default_factory=list)
     analysis_engine: str
     cors_origins: list[str]
+    capabilities: list["CapabilityOut"] = Field(default_factory=list)
+
+
+class CapabilityOut(BaseModel):
+    id: str
+    label: str
+    enabled: bool
+    reason: str
+
+
+class LinkedInPreflightResponse(BaseModel):
+    configured: bool
+    publishing_enabled: bool = False
+    required_scopes: list[str] = Field(default_factory=list)
+    required_products: list[str] = Field(default_factory=list)
+    steps: list[str] = Field(default_factory=list)
+    note: str = ""
 
 
 class HealthResponse(BaseModel):

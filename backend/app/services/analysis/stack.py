@@ -134,6 +134,17 @@ _README_NAMES: dict[str, tuple[str, TechCategory]] = {
 }
 
 
+KNOWN_TECHNOLOGY_NAMES: list[str] = sorted(
+    {
+        value[0]
+        for mapping in (_JS_MAP, _PY_MAP, _GO_MAP, _RUST_MAP, _README_NAMES)
+        for value in mapping.values()
+    },
+    key=len,
+    reverse=True,
+)
+
+
 @dataclass
 class TechAccumulator:
     items: dict[str, TechOut] = field(default_factory=dict)
