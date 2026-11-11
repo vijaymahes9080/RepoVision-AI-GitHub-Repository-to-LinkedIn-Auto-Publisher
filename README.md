@@ -1,180 +1,237 @@
-# RepoVision AI – GitHub Repository to LinkedIn Auto Publisher 🚀
+# RepoVision
 
-[![SaaS Version](https://img.shields.io/badge/SaaS-v2.5-6366f1?style=for-the-badge&logo=rocket)](https://github.com/vijaymahes9080/RepoVision-AI-GitHub-Repository-to-LinkedIn-Auto-Publisher)
-[![License](https://img.shields.io/badge/License-MIT-emerald?style=for-the-badge)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/vijaymahes9080/RepoVision-AI-GitHub-Repository-to-LinkedIn-Auto-Publisher?style=for-the-badge&color=amber)](https://github.com/vijaymahes9080/RepoVision-AI-GitHub-Repository-to-LinkedIn-Auto-Publisher)
-[![LinkedIn OAuth](https://img.shields.io/badge/LinkedIn-OAuth_2.0-0a66c2?style=for-the-badge&logo=linkedin)](https://linkedin.com)
-[![GPT-5.5 Engine](https://img.shields.io/badge/AI_Engine-GPT--5.5-cyan?style=for-the-badge&logo=openai)](https://openai.com)
+**Evidence-first GitHub repository intelligence with grounded LinkedIn drafts.**
 
-**RepoVision AI** is a fully cloud-hosted SaaS platform that automatically analyzes public or authorized GitHub repositories using AI, understands project architecture and tech stacks, generates professional LinkedIn content (Posts, Glassmorphism Banners, 10-Slide PDF Carousels, and 30-Second Shorts), and publishes them directly to LinkedIn via official OAuth APIs.
+![Status](https://img.shields.io/badge/status-M1-6366f1)
+![Backend](https://img.shields.io/badge/backend-FastAPI-009688)
+![Frontend](https://img.shields.io/badge/frontend-React%20%2B%20Vite-61dafb)
+![License](https://img.shields.io/badge/license-MIT-emerald)
 
-<p align="center">
-  <img src="public/assets/hero_banner.png" alt="RepoVision AI Hero Banner" width="100%" />
-</p>
+RepoVision analyzes a **public GitHub repository**, stores evidence for each finding, and generates
+LinkedIn drafts that are checked against that evidence. It also exports a real PNG banner and a real
+multi-page PDF carousel in the browser.
 
----
+This is an M1 implementation. It does **not** publish to LinkedIn, schedule posts, collect analytics,
+or produce security grades. Those features are either absent or visibly disabled; no sample data is
+used to pretend otherwise.
 
-## 💡 The Problem & The Solution
+## What works
 
-- 📌 **The Challenge:** Developers and open-source authors invest hundreds of hours building incredible projects, yet struggle to promote them consistently on LinkedIn due to the manual effort required to write posts, design graphics, and format carousels.
-- ⚡ **The Solution:** RepoVision AI automates the entire GitHub-to-LinkedIn pipeline in the cloud. Just paste your repository URL and get a fully engineered LinkedIn campaign ready for instant scheduling or automated publishing.
+- Public GitHub snapshot ingestion with strict URL validation and bounded reads.
+- Deterministic detection of technologies, README features, problem/solution sections, API route
+  declarations, testing/CI signals, license, and static security patterns.
+- An evidence index. Every technology, feature, and security finding references stored evidence IDs.
+- Grounded draft generation with style and length options.
+- Optional OpenAI-compatible or Ollama provider; deterministic fallback when none is configured.
+- A fact verifier for unsupported numbers, external URLs, first-person claims, superlatives,
+  security guarantees, attribution, and unsupported technologies.
+- Real browser-side exports: banner PNG via `html-to-image`, carousel PDF via `jsPDF`.
+- Honest configuration and LinkedIn preflight screens.
 
----
+## What is intentionally not in M1
 
-## 🛠️ Complete System Workflow
+| Module | Status | Why |
+| --- | --- | --- |
+| LinkedIn OAuth and publishing | Disabled | Needs approved LinkedIn products, HTTPS callback, state + PKCE, encrypted token storage |
+| Scheduler and queue | Disabled | Needs a durable queue plus publishing access |
+| Engagement analytics | Disabled | Needs LinkedIn analytics scopes and real post data |
+| Video, blog, X thread, resume, portfolio | Disabled | Each needs a real integration or verified authorship; sample outputs are not substituted |
+| Dependency/CVE scanning | Not run | No vulnerability counts or security grades are reported |
+| User accounts / multi-tenancy | Not implemented | M1 is a local, single-operator application |
 
-```
-               [ User Input Repository URL ]
-                             │
-                             ▼
-                   [ GitHub OAuth / REST ]
-                             │
-                             ▼
-             [ Cloud Repository Clone & AST Parser ]
-                             │
-                             ▼
-             ┌───────────────┴───────────────┐
-             │   AI Code Understanding       │
-             │   • Read README.md & Files    │
-             │   • Detect 30+ Frameworks     │
-             │   • Extract System Architecture│
-             └───────────────┬───────────────┘
-                             │
-                             ▼
-               [ AI Multi-Format Generation ]
-    ┌──────────────┬─────────┼─────────┬──────────────┐
-    │              │         │         │              │
- [ LinkedIn ]  [ Visual ] [ Shorts ] [ Portfolio ] [ Twitter ]
- [ Content  ]  [ Banners] [ Video  ] [ Builder   ] [ Thread  ]
-    └──────────────┴─────────┼─────────┴──────────────┘
-                             │
-                             ▼
-            [ Live LinkedIn Desktop/Mobile Preview ]
-                             │
-                             ▼
-            [ Official LinkedIn OAuth Publishing ]
-                             │
-                             ▼
-            [ Analytics & Performance Insights ]
+The UI shows a "Not in M1" panel with the requirements for each planned module.
+
+## Architecture
+
+```text
+React + Vite frontend
+  │  /api/v1
+  ▼
+FastAPI backend
+  ├── Strict GitHub URL parser ──> api.github.com (fixed host, no redirects)
+  ├── Bounded snapshot (tree, README, prioritized files)
+  ├── Deterministic analysis ──> evidence index
+  ├── Grounded draft generator ── optional LLM ──> fact verifier
+  └── SQLAlchemy ──> SQLite locally / PostgreSQL-ready models
 ```
 
----
+Repository code is never cloned, installed, built, or executed. The backend reads file text only.
 
-## 🔥 Visual Feature Showcases
+## Quick start
 
-### 🎨 1. Visual Studio & 10-Slide PDF Carousel Generator
-Create high-DPI glassmorphism header banners and 10-slide technical PDF carousels tailored for LinkedIn algorithm optimization.
+Requirements: Python 3.12+, Node.js 20.19+ or 22.12+.
 
-<p align="center">
-  <img src="public/assets/visual_studio.png" alt="RepoVision AI Visual Studio Showcase" width="100%" />
-</p>
+### 1. Backend
 
----
+Windows PowerShell:
 
-### 📊 2. AI Post Analytics & Performance Insights
-Track total impressions, views, engagement rates, follower growth, and receive AI recommendations for peak posting times.
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -e ".[dev]"
+Copy-Item .env.example .env
+.\.venv\Scripts\alembic upgrade head
+.\.venv\Scripts\python -m uvicorn app.main:app --reload
+```
 
-<p align="center">
-  <img src="public/assets/analytics_dashboard.png" alt="RepoVision AI Analytics Dashboard" width="100%" />
-</p>
+macOS/Linux:
 
----
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
+cp .env.example .env
+alembic upgrade head
+python -m uvicorn app.main:app --reload
+```
 
-### 🎬 3. 30-Second AI Promotional Shorts Studio
-Interactive vertical video player previewing animated code reveals, visual cues, AI voiceover narration transcript, and waveform audio visualizers.
+API: `http://127.0.0.1:8000` · Docs: `http://127.0.0.1:8000/docs`
 
-<p align="center">
-  <img src="public/assets/video_shorts.png" alt="RepoVision AI Video Shorts Studio" width="100%" />
-</p>
+### 2. Frontend
 
----
+From the repository root:
 
-## 🚀 Module Capabilities Breakdown
+```bash
+npm install
+npm run dev
+```
 
-### 1. 🤖 Automated GitHub Repository Analyzer
-- **AST Tech Stack Extractor:** Automatically identifies 30+ frameworks across Frontend (React, Next.js, Angular, Vue), Backend (FastAPI, Node.js, Django, Spring Boot), Databases (PostgreSQL, MongoDB, Redis), AI/ML (LangChain, OpenAI, PyTorch), and Cloud/DevOps (Docker, AWS, Kubernetes).
-- **Project Context Synthesis:** Extracts core problem statements, technical solutions, algorithms, and key innovations.
+Open `http://localhost:5173`. Vite proxies `/api` to `http://127.0.0.1:8000`.
 
-### 2. ✍️ LinkedIn AI Content Studio
-- **Post Body Length Toggles:** Short Hook, Medium Post, Deep Dive.
-- **High-Conversion AI Hooks:** Generates 3 hook options engineered for high feed retention.
-- **Hashtag Suite & Prompts:** Contextual hashtag generator + custom DALL-E/Midjourney prompts.
-- **Authentic Live Preview:** Real-time desktop & mobile LinkedIn post preview card with full character counts and social reaction buttons.
+### 3. Analyze
 
-### 3. 🌐 AI Developer Portfolio Builder
-- Automatically transforms analyzed GitHub repositories into an interactive developer portfolio website with project highlights, star metrics, and JSON data export.
+1. Open **Repo Analyzer**.
+2. Enter a public URL such as `https://github.com/tiangolo/fastapi`.
+3. Review the snapshot summary, evidence index, and limitations.
+4. Open **Content Studio** to generate and verify a draft.
+5. Open **Visual Studio** to download a banner PNG or carousel PDF.
+6. Publish manually: copy the verified text, attach the exported media, and open LinkedIn yourself.
 
-### 4. 🛡️ AI Code Security & Quality Auditor
-- AST security scanner checking for exposed secrets/API keys, CVE dependency vulnerabilities, strict TypeScript compliance, and open-source license verification (Score: 94/100 A+).
+## Configuration
 
-### 5. 💬 X (Twitter) 5-Tweet Viral Thread Studio
-- Formats repository launch into a 5-tweet viral thread with emojis, technical breakdown, and repository link.
+All secrets are server-side environment variables. See `backend/.env.example` for the full list.
 
-### 6. 📝 Dev.to / Medium / Hashnode Article Generator
-- Generates long-form technical Markdown articles formatted for Dev.to, Medium, and Hashnode publishing.
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | `sqlite:///./repovision.db` | Use `postgresql+psycopg://...` for PostgreSQL |
+| `CORS_ORIGINS` | local Vite origins | Comma-separated exact origins |
+| `GITHUB_TOKEN` | empty | Optional; raises GitHub API rate limits |
+| `LLM_PROVIDER` | `none` | `none`, `openai`, or `ollama` |
+| `OPENAI_API_KEY` | empty | Server-side only |
+| `OPENAI_MODEL` | `gpt-4o-mini` | Model name |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Local Ollama server |
+| `OLLAMA_MODEL` | `llama3.1` | Model name |
+| `LINKEDIN_CLIENT_*` | empty | Optional in M1; preflight only |
 
-### 7. 💼 AI Resume / CV Experience Bullet Generator
-- Converts repository code & architecture into quantifiable, ATS-friendly resume experience bullets.
+Frontend:
 
-### 8. 📅 Official OAuth Scheduler & 1-Click Fallback Queue
-- Schedule campaigns daily, weekly, or on custom dates.
-- **Compliance Guarantee:** Where LinkedIn API scope restrictions apply, posts are queued for a **1-Click Review & Publish** workflow so your account stays 100% compliant.
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | `/api/v1` | Public API base; never put secrets in `VITE_*` |
 
----
+**Never** place API keys or tokens in frontend environment variables. Vite embeds them in the
+public bundle.
 
-## 💻 Tech Stack
+## Evidence guarantees
 
-- **Frontend:** React 19, Next.js / Vite, TypeScript, Tailwind CSS, Lucide Icons, Framer Motion
-- **Backend / AI Engine:** FastAPI, Node.js, OpenAI GPT-5.5, LangChain
-- **OAuth & Auth:** GitHub OAuth 2.0, LinkedIn OAuth 2.0, Google SSO, Email Magic Links
-- **Database & Storage:** PostgreSQL, Redis Queue, AWS S3 / Cloudflare R2
+- Technologies come from manifests, configuration, source extensions, or README mentions. README-only
+  mentions are marked inferred with low confidence.
+- Features come only from README headings and bullets. If none are recognizable, the list is empty.
+- Problem and solution are returned only when the README explicitly labels them.
+- Security findings are pattern matches with file evidence. There is no score, grade, or CVE count.
+- Analysis provenance is always `deterministic-v1`, `llm_used: false`.
+- Draft claims store evidence IDs. The verifier blocks unsupported numbers, external URLs,
+  first-person voice, superlatives, security guarantees, and unverified attribution.
 
----
+## API
 
-## ⚡ Quick Start & Local Setup
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/api/v1/health` | Liveness |
+| GET | `/api/v1/config/status` | Non-secret runtime status |
+| GET | `/api/v1/linkedin/preflight` | Required LinkedIn products/scopes |
+| POST | `/api/v1/analyses` | Start an analysis |
+| GET | `/api/v1/analyses/{id}` | Status and result |
+| GET | `/api/v1/analyses/{id}/evidence` | Evidence index |
+| GET | `/api/v1/analyses/{id}/content` | Drafts for a run |
+| POST | `/api/v1/content` | Generate a draft |
+| POST | `/api/v1/content/verify` | Verify text against evidence |
 
-### Prerequisites
-- Node.js (v18+ or v20+)
-- npm or yarn
+Errors use `{ "error": { "code", "message" }, "request_id" }`.
 
-### Installation
+## Testing
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/vijaymahes9080/RepoVision-AI-GitHub-Repository-to-LinkedIn-Auto-Publisher.git
-   cd RepoVision-AI-GitHub-Repository-to-LinkedIn-Auto-Publisher
-   ```
+```powershell
+# Backend
+cd backend
+.\.venv\Scripts\python -m ruff check app tests migrations
+.\.venv\Scripts\python -m pytest
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+# Frontend
+npm run lint
+npm run build
+```
 
-3. **Start the local development server:**
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:5173/` in your browser.
+Verified on 2026-11-11:
 
-4. **Build for production:**
-   ```bash
-   npm run build
-   ```
+- Backend: **26 passed**, 1 Starlette deprecation warning; `ruff` clean.
+- Frontend: **lint clean**, production build passed; one chunk-size warning.
+- Alembic upgrade/downgrade passed on temporary SQLite.
+- PostgreSQL, live GitHub calls, live LLM calls, and browser E2E exports were **not** verified in this
+  environment.
 
----
+Details: [docs/REPOVISION_TESTING.md](docs/REPOVISION_TESTING.md).
 
-## 🛡️ Platform Compliance & Security
+## Documentation
 
-RepoVision AI strictly respects third-party platform terms:
-- Uses official GitHub OAuth and REST API endpoints.
-- Uses official LinkedIn OAuth 2.0 scopes.
-- Never automates unauthorized scraping; defaults to 1-Click Review fallback queues when direct posting scope is unavailable.
+- [Audit and remediation record](docs/REPOVISION_AUDIT.md)
+- [Architecture](docs/REPOVISION_ARCHITECTURE.md)
+- [Gap analysis](docs/REPOVISION_GAP_ANALYSIS.md)
+- [Roadmap](docs/REPOVISION_ROADMAP.md)
+- [Testing](docs/REPOVISION_TESTING.md)
+- [Security notes](docs/REPOVISION_SECURITY.md)
+- [Deployment](docs/REPOVISION_DEPLOYMENT.md)
 
----
+## Project structure
 
-## 👤 Author & License
+```text
+backend/
+  app/
+    api/routes/          health, config, analyses, content
+    core/                application errors
+    services/
+      github/            URL parser, client, bounded snapshot
+      analysis/          evidence, redaction, stack, features, testing, security, architecture
+      content/           grounded drafts, verifier
+      llm/               provider interface, OpenAI-compatible, Ollama
+    config.py            environment settings
+    db.py                SQLAlchemy engine/session
+    models.py            analysis runs, evidence, drafts, fact checks
+    schemas.py           API models
+    main.py              FastAPI application
+  migrations/            Alembic
+  tests/                 backend test suite
 
-- **Author:** Vijay Mahes
-- **Email:** [Vijaypradhap2004@gmail.com](mailto:Vijaypradhap2004@gmail.com)
-- **GitHub:** [@vijaymahes9080](https://github.com/vijaymahes9080)
-- **License:** Distributed under the [MIT License](LICENSE).
+src/
+  api/                   typed API client
+  components/            analyzer, content studio, visual studio, security, integrations, admin
+  services/              banner/carousel builders, real PNG/PDF exports
+  types/                 API and UI types
+```
+
+## Security
+
+- Strict GitHub URL parsing and a fixed GitHub API host.
+- No repository code execution.
+- Secret-like values are redacted before evidence is stored.
+- The browser receives configuration booleans, never secrets.
+- LinkedIn publishing is always disabled in M1.
+- `npm audit` currently reports 4 vulnerabilities (1 moderate, 3 high); see the security notes for
+  the production-only breakdown and remediation policy.
+
+Read [docs/REPOVISION_SECURITY.md](docs/REPOVISION_SECURITY.md) before deploying.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

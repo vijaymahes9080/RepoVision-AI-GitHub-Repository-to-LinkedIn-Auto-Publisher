@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install Dependencies
@@ -37,6 +37,10 @@ jobs:
 
       - name: Build Project
         run: npm run build
+        env:
+          # Optional public backend base URL. The GitHub Pages artifact is a static frontend;
+          # API-backed features require a separately deployed FastAPI service.
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

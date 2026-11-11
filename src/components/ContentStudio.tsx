@@ -13,7 +13,6 @@ import {
   Sparkles,
   Copy,
   Check,
-  ArrowRight,
   Wand2,
   Tag,
   Monitor,
