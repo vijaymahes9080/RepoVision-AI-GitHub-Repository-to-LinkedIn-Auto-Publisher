@@ -47,7 +47,9 @@ class EvidenceCollector:
             return existing
 
         if line_start is None and content is not None:
-            line_start = find_line(content, excerpt.strip().splitlines()[0] if excerpt.strip() else "")
+            line_start = find_line(
+                content, excerpt.strip().splitlines()[0] if excerpt.strip() else ""
+            )
         if line_end is None:
             line_end = line_start
 

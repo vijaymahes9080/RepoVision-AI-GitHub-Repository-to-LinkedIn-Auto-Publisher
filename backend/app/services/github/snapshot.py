@@ -214,7 +214,9 @@ def build_snapshot(repo_url: str, branch: str | None = None) -> RepoSnapshot:
 
         commit_sha = client.get_branch_sha(ref.owner, ref.name, target_branch)
         if not commit_sha:
-            raise BranchNotFound(f"Branch '{target_branch}' was not found in {ref.owner}/{ref.name}.")
+            raise BranchNotFound(
+                f"Branch '{target_branch}' was not found in {ref.owner}/{ref.name}."
+            )
 
         commit = client.get_commit(ref.owner, ref.name, commit_sha)
         tree_info = commit.get("tree") or {}
@@ -227,11 +229,13 @@ def build_snapshot(repo_url: str, branch: str | None = None) -> RepoSnapshot:
         tree_truncated = bool(tree.get("truncated"))
         if tree_truncated:
             limitations.append(
-                "GitHub truncated the recursive tree response; analysis covers only the visible paths."
+                "GitHub truncated the recursive tree response; analysis covers only the visible "
+                "paths."
             )
         if len(entries) > settings.max_tree_entries:
             limitations.append(
-                f"The repository has more than {settings.max_tree_entries} tree entries; analysis used a bounded subset."
+                f"The repository has more than {settings.max_tree_entries} tree entries; "
+                "analysis used a bounded subset."
             )
 
         blob_paths = [
@@ -263,7 +267,9 @@ def build_snapshot(repo_url: str, branch: str | None = None) -> RepoSnapshot:
                 continue
             size = len(content.encode("utf-8"))
             if analyzed_bytes + size > settings.max_total_bytes:
-                limitations.append("The analyzed file budget was reached; remaining files were skipped.")
+                limitations.append(
+                    "The analyzed file budget was reached; remaining files were skipped."
+                )
                 break
             files[path] = content
             analyzed_bytes += size
@@ -276,7 +282,8 @@ def build_snapshot(repo_url: str, branch: str | None = None) -> RepoSnapshot:
 
         if skipped_for_size:
             limitations.append(
-                f"{skipped_for_size} file(s) were skipped because they exceeded size limits or could not be read."
+                f"{skipped_for_size} file(s) were skipped because they exceeded size limits or "
+                "could not be read."
             )
         if not blob_paths:
             limitations.append("The repository snapshot contains no files.")

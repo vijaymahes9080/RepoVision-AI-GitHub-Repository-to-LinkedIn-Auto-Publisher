@@ -48,7 +48,10 @@ def _is_test_path(path: str) -> bool:
     lowered = path.lower()
     name = PurePosixPath(lowered).name
     parts = [part.lower() for part in PurePosixPath(lowered).parts]
-    if any(part in {"tests", "__tests__", "test", "spec", "e2e", "integration_tests"} for part in parts[:-1]):
+    if any(
+        part in {"tests", "__tests__", "test", "spec", "e2e", "integration_tests"}
+        for part in parts[:-1]
+    ):
         return True
     return (
         name.startswith("test_")

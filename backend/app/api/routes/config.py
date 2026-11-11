@@ -33,7 +33,10 @@ _CAPABILITIES = [
         id="scheduler",
         label="Scheduling",
         enabled=False,
-        reason="Scheduling is not implemented in M1. It requires publishing access and a durable job queue.",
+        reason=(
+            "Scheduling is not implemented in M1. It requires publishing access and a durable "
+            "job queue."
+        ),
     ),
     CapabilityOut(
         id="analytics",

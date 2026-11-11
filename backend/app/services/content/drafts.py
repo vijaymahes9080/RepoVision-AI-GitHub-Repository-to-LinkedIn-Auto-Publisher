@@ -82,11 +82,7 @@ def _sentence(text: str) -> str:
 
 
 def _evidence_ids_for(result: AnalysisResult, categories: set[str]) -> list[str]:
-    return [
-        item.id
-        for item in result.evidence
-        if item.category in categories
-    ]
+    return [item.id for item in result.evidence if item.category in categories]
 
 
 def _claim(text: str, evidence_ids: list[str]) -> dict:
@@ -141,9 +137,7 @@ def _stack_sentence(result: AnalysisResult) -> tuple[str, list[str]]:
     evidence_ids: list[str] = []
     for technology in technologies[:6]:
         evidence_ids.extend(technology.evidence_ids)
-    sentence = _sentence(
-        "Manifests and configuration in the snapshot support " + ", ".join(names)
-    )
+    sentence = _sentence("Manifests and configuration in the snapshot support " + ", ".join(names))
     return sentence, evidence_ids
 
 
@@ -188,9 +182,7 @@ def _architecture_sentence(result: AnalysisResult) -> tuple[str, list[str]]:
     return sentence, result.architecture.evidence_ids
 
 
-def build_rule_based_draft(
-    result: AnalysisResult, *, style: str, length: str
-) -> GeneratedDraft:
+def build_rule_based_draft(result: AnalysisResult, *, style: str, length: str) -> GeneratedDraft:
     repo_label = f"{result.repo.owner}/{result.repo.name}"
     opener = _OPENERS.get(style, _OPENERS["professional"]).format(repo=repo_label)
     cta = _CTAS.get(style, _CTAS["professional"]).format(url=result.repo.url)
@@ -232,9 +224,7 @@ def build_rule_based_draft(
 
     if length == "long":
         if result.limitations:
-            paragraphs.append(
-                "Evidence boundary: " + _short(result.limitations[0], 260)
-            )
+            paragraphs.append("Evidence boundary: " + _short(result.limitations[0], 260))
         if len(result.limitations) > 1:
             paragraphs.append(_short(result.limitations[1], 260))
         if result.api_endpoints:
@@ -372,9 +362,7 @@ def _parse_llm_output(raw: str, result: AnalysisResult) -> GeneratedDraft:
     hashtags_raw = payload.get("hashtags") or []
     hooks = [str(item).strip() for item in hooks_raw if str(item).strip()][:3]
     hashtags = [
-        re.sub(r"^#+", "", str(item).strip())
-        for item in hashtags_raw
-        if str(item).strip()
+        re.sub(r"^#+", "", str(item).strip()) for item in hashtags_raw if str(item).strip()
     ][:6]
     cta = str(payload.get("cta", "")).strip()
 
@@ -412,16 +400,12 @@ def generate_draft(
     provider = get_llm_provider()
     if provider is not None:
         try:
-            raw = provider.generate(
-                _build_llm_prompt(result, request.style, request.length)
-            )
+            raw = provider.generate(_build_llm_prompt(result, request.style, request.length))
             generated = _parse_llm_output(raw, result)
             generated.model = provider.model
         except Exception as exc:  # LLM failures must never break draft generation.
             fallback_reason = f"LLM generation was unavailable or failed validation: {exc}"
-            generated = build_rule_based_draft(
-                result, style=request.style, length=request.length
-            )
+            generated = build_rule_based_draft(result, style=request.style, length=request.length)
             generated.model = None
     else:
         generated = build_rule_based_draft(result, style=request.style, length=request.length)

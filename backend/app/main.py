@@ -77,7 +77,10 @@ async def app_error_handler(request: Request, exc: AppError):
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(request: Request, exc: RequestValidationError):
     details = [
-        {"field": ".".join(str(part) for part in error.get("loc", [])), "message": error.get("msg", "")}
+        {
+            "field": ".".join(str(part) for part in error.get("loc", [])),
+            "message": error.get("msg", ""),
+        }
         for error in exc.errors()
     ]
     return JSONResponse(

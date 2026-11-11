@@ -345,11 +345,39 @@ def _first_paragraph(lines: list[str]) -> str:
 
 
 _ROUTE_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
-    ("python", re.compile(r"@(?:app|router|bp|blueprint)\.(get|post|put|patch|delete)\(\s*[\"']([^\"']+)[\"']", re.I), "py"),
-    ("python", re.compile(r"@(?:app|router|bp|blueprint)\.route\(\s*[\"']([^\"']+)[\"'](?:[^)]*methods\s*=\s*\[([^\]]*)\])?", re.I), "py"),
-    ("node", re.compile(r"\b(?:app|router|server)\.(get|post|put|patch|delete)\(\s*[\"'`]([^\"'`]+)[\"'`]", re.I), "js"),
-    ("node", re.compile(r"\b(?:app|router|server)\.(GET|POST|PUT|PATCH|DELETE)\(\s*[\"']([^\"']+)[\"']"), "js"),
-    ("java", re.compile(r"@(Get|Post|Put|Patch|Delete)Mapping\(\s*(?:value\s*=\s*)?[\"']([^\"']+)[\"']"), "java"),
+    (
+        "python",
+        re.compile(
+            r"@(?:app|router|bp|blueprint)\.(get|post|put|patch|delete)\(\s*[\"']([^\"']+)[\"']",
+            re.I,
+        ),
+        "py",
+    ),
+    (
+        "python",
+        re.compile(
+            r"@(?:app|router|bp|blueprint)\.route\(\s*[\"']([^\"']+)[\"'](?:[^)]*methods\s*=\s*\[([^\]]*)\])?",
+            re.I,
+        ),
+        "py",
+    ),
+    (
+        "node",
+        re.compile(
+            r"\b(?:app|router|server)\.(get|post|put|patch|delete)\(\s*[\"'`]([^\"'`]+)[\"'`]", re.I
+        ),
+        "js",
+    ),
+    (
+        "node",
+        re.compile(r"\b(?:app|router|server)\.(GET|POST|PUT|PATCH|DELETE)\(\s*[\"']([^\"']+)[\"']"),
+        "js",
+    ),
+    (
+        "java",
+        re.compile(r"@(Get|Post|Put|Patch|Delete)Mapping\(\s*(?:value\s*=\s*)?[\"']([^\"']+)[\"']"),
+        "java",
+    ),
     ("go", re.compile(r"\.(GET|POST|PUT|PATCH|DELETE)\(\s*[\"']([^\"']+)[\"']"), "go"),
 ]
 
@@ -383,7 +411,9 @@ def extract_api_endpoints(
                 continue
             for match in pattern.finditer(content):
                 groups = match.groups()
-                if language == "python" and pattern.pattern.startswith("@(?:app|router|bp|blueprint)\\.route"):
+                if language == "python" and pattern.pattern.startswith(
+                    "@(?:app|router|bp|blueprint)\\.route"
+                ):
                     route = groups[0]
                     methods = groups[1] if len(groups) > 1 else None
                     method = "GET"

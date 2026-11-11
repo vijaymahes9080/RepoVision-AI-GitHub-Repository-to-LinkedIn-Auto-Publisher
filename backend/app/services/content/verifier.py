@@ -171,8 +171,7 @@ def verify_text(text: str, result: AnalysisResult) -> VerificationOut:
             continue
         add_issue(
             _sentence_for(text, match.start(), match.end()),
-            "First-person voice is blocked in M1. Describe the repository in neutral "
-            "third person.",
+            "First-person voice is blocked in M1. Describe the repository in neutral third person.",
         )
 
     allowed_urls = {result.repo.url.rstrip("/"), result.repo.url.rstrip("/") + "/"}

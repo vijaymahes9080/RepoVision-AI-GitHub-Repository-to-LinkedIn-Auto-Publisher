@@ -56,7 +56,8 @@ class GitHubClient:
             if allow_404:
                 return None
             raise RepositoryNotFound(
-                "Repository not found. It may not exist, or it may be private and require authorization."
+                "Repository not found. It may not exist, or it may be private and require "
+                "authorization."
             )
 
         if response.status_code in {403, 429}:
@@ -67,11 +68,13 @@ class GitHubClient:
                 reset_at = datetime.fromtimestamp(int(reset), tz=timezone.utc).isoformat()
             if response.status_code == 429 or remaining == "0":
                 raise GitHubRateLimited(
-                    "GitHub API rate limit reached. Configure a server-side GitHub token or try again later.",
+                    "GitHub API rate limit reached. Configure a server-side GitHub token or try "
+                    "again later.",
                     details={"reset_at": reset_at},
                 )
             raise GitHubUnavailable(
-                "GitHub rejected the request. The repository may be inaccessible or GitHub may be rate limiting this server."
+                "GitHub rejected the request. The repository may be inaccessible or GitHub may "
+                "be rate limiting this server."
             )
 
         if response.status_code == 401:

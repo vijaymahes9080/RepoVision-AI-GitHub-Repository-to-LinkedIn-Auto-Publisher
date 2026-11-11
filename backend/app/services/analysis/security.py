@@ -130,7 +130,12 @@ _LICENSE_SIGNATURES: list[tuple[str, re.Pattern[str]]] = [
     ("AGPL-3.0", re.compile(r"\bGNU AFFERO GENERAL PUBLIC LICENSE\b", re.I)),
     ("BSD-3-Clause", re.compile(r"Redistribution and use in source and binary forms", re.I)),
     ("MPL-2.0", re.compile(r"\bMozilla Public License\b[\s\S]{0,200}2\.0", re.I)),
-    ("Unlicense", re.compile(r"\bThis is free and unencumbered software released into the public domain", re.I)),
+    (
+        "Unlicense",
+        re.compile(
+            r"\bThis is free and unencumbered software released into the public domain", re.I
+        ),
+    ),
 ]
 
 _LICENSE_FILE_NAMES = {
