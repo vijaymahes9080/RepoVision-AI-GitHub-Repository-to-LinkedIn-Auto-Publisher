@@ -264,6 +264,59 @@ class LinkedInPreflightResponse(BaseModel):
     note: str = ""
 
 
+class LinkedInOAuthStartResponse(BaseModel):
+    authorization_url: str
+    state: str
+    expires_at: datetime
+
+
+class LinkedInStatusResponse(BaseModel):
+    configured: bool
+    publishing_enabled: bool
+    connected: bool
+    member_name: str | None = None
+    member_picture: str | None = None
+    scopes: list[str] = Field(default_factory=list)
+    expires_at: datetime | None = None
+    can_publish: bool
+    reason: str
+    required_scopes: list[str] = Field(default_factory=list)
+
+
+class LinkedInPublishRequest(BaseModel):
+    draft_id: str
+    confirm: bool = False
+    commentary: str | None = Field(default=None, max_length=3000)
+    image_base64: str | None = Field(default=None, max_length=12_000_000)
+
+
+class LinkedInPublishResponse(BaseModel):
+    status: str
+    attempt_id: str
+    post_urn: str | None = None
+    published_at: datetime
+    has_image: bool
+
+
+class LinkedInAttemptOut(BaseModel):
+    id: str
+    draft_id: str | None = None
+    status: str
+    commentary: str
+    has_image: bool
+    image_urn: str | None = None
+    post_urn: str | None = None
+    error_code: str | None = None
+    error_message: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class LinkedInDisconnectResponse(BaseModel):
+    disconnected: int
+    connected: bool = False
+
+
 class HealthResponse(BaseModel):
     status: str
     version: str

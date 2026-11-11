@@ -42,6 +42,16 @@ class Settings(BaseSettings):
     linkedin_client_id: str | None = None
     linkedin_client_secret: str | None = None
     linkedin_redirect_uri: str | None = None
+    # Explicit opt-in for real posting. Keep false until the LinkedIn app is approved.
+    linkedin_enabled: bool = False
+    linkedin_api_base: str = "https://api.linkedin.com"
+    linkedin_oauth_base: str = "https://www.linkedin.com/oauth/v2"
+    linkedin_api_version: str = "202501"
+    linkedin_timeout_seconds: float = 30.0
+    # Fernet key used to encrypt member tokens at rest. Generate with:
+    # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    token_encryption_key: str | None = None
+    frontend_url: str = "http://localhost:5173"
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -68,6 +78,16 @@ class Settings(BaseSettings):
         return bool(
             self.linkedin_client_id and self.linkedin_client_secret and self.linkedin_redirect_uri
         )
+
+    @property
+    def linkedin_ready(self) -> bool:
+        """True when OAuth can start and tokens can be encrypted at rest."""
+
+        return self.linkedin_configured and bool(self.token_encryption_key)
+
+    @property
+    def linkedin_publishing_allowed(self) -> bool:
+        return self.linkedin_enabled and self.linkedin_ready
 
 
 @lru_cache

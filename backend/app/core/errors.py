@@ -95,3 +95,38 @@ class ContentVerificationFailed(AppError):
 class LLMUnavailable(AppError):
     code = "LLM_UNAVAILABLE"
     status_code = 503
+
+
+class LinkedInNotConfigured(AppError):
+    code = "LINKEDIN_NOT_CONFIGURED"
+    status_code = 503
+
+
+class LinkedInPublishingDisabled(AppError):
+    code = "LINKEDIN_PUBLISHING_DISABLED"
+    status_code = 503
+
+
+class LinkedInNotConnected(AppError):
+    code = "LINKEDIN_NOT_CONNECTED"
+    status_code = 409
+
+
+class LinkedInOAuthError(AppError):
+    code = "LINKEDIN_OAUTH_ERROR"
+    status_code = 400
+
+
+class LinkedInPublishConfirmationRequired(AppError):
+    code = "PUBLISH_CONFIRMATION_REQUIRED"
+    status_code = 422
+
+
+class LinkedInPublishFailed(AppError):
+    code = "LINKEDIN_PUBLISH_FAILED"
+    status_code = 502
+
+
+class LinkedInUnavailable(AppError):
+    code = "LINKEDIN_UNAVAILABLE"
+    status_code = 502

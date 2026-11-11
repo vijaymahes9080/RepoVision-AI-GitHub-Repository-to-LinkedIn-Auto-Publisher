@@ -9,7 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import analyses, config, content, health
+from app.api.routes import analyses, config, content, health, linkedin
 from app.config import settings
 from app.core.errors import AppError
 from app.db import init_db
@@ -31,8 +31,9 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description=(
-        "Evidence-first GitHub repository intelligence. M1 performs static analysis only and "
-        "never executes repository code."
+        "Evidence-first GitHub repository intelligence. Analysis is static and never executes "
+        "repository code. LinkedIn publishing is opt-in, requires explicit confirmation, and "
+        "reports success only from a real LinkedIn API response."
     ),
     lifespan=lifespan,
 )
@@ -111,6 +112,7 @@ app.include_router(health.router, prefix=settings.api_prefix)
 app.include_router(config.router, prefix=settings.api_prefix)
 app.include_router(analyses.router, prefix=settings.api_prefix)
 app.include_router(content.router, prefix=settings.api_prefix)
+app.include_router(linkedin.router, prefix=settings.api_prefix)
 
 
 @app.get("/")
