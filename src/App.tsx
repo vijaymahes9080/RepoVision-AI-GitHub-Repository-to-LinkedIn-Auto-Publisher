@@ -52,6 +52,10 @@ export function App() {
   const [draft, setDraft] = useState<ContentDraft | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [contentError, setContentError] = useState<string | null>(null);
+  const [linkedinNotice, setLinkedinNotice] = useState<{
+    kind: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const currentRunIdRef = useRef<string | null>(null);
   const draftRequestRef = useRef<string | null>(null);
@@ -69,6 +73,39 @@ export function App() {
 
   useEffect(() => {
     void loadConfig();
+  }, [loadConfig]);
+
+  // Surface the result of the LinkedIn OAuth redirect and remove it from the URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const result = params.get('linkedin');
+    if (!result) return;
+
+    if (result === 'connected') {
+      const member = params.get('member');
+      setLinkedinNotice({
+        kind: 'success',
+        message: `LinkedIn connected${member ? `: ${member}` : ''}. You can publish after reviewing a draft and banner.`,
+      });
+      void loadConfig();
+    } else {
+      setLinkedinNotice({
+        kind: 'error',
+        message: params.get('message') || 'LinkedIn authorization failed. Try connecting again.',
+      });
+    }
+    setActiveTab('integrations');
+
+    params.delete('linkedin');
+    params.delete('member');
+    params.delete('message');
+    params.delete('code');
+    const query = params.toString();
+    window.history.replaceState(
+      {},
+      '',
+      `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`,
+    );
   }, [loadConfig]);
 
   const ensureDraft = useCallback(async (runId: string) => {
@@ -279,6 +316,24 @@ export function App() {
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+          {linkedinNotice && (
+            <div
+              className={`mb-4 p-4 rounded-xl border text-xs flex items-start justify-between gap-3 ${
+                linkedinNotice.kind === 'success'
+                  ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                  : 'bg-red-950/50 border-red-500/40 text-red-200'
+              }`}
+            >
+              <span className="leading-relaxed">{linkedinNotice.message}</span>
+              <button
+                onClick={() => setLinkedinNotice(null)}
+                className="shrink-0 px-2 py-0.5 rounded bg-black/30 hover:bg-black/50 font-semibold"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
           {activeTab === 'analyzer' && (
             <RepoAnalyzer
               analysis={analysis}
@@ -302,7 +357,13 @@ export function App() {
             />
           )}
 
-          {activeTab === 'visual' && <VisualStudio analysis={analysis} />}
+          {activeTab === 'visual' && (
+            <VisualStudio
+              analysis={analysis}
+              draft={draft}
+              onNavigateToIntegrations={() => setActiveTab('integrations')}
+            />
+          )}
 
           {activeTab === 'security' && <SecurityView analysis={analysis} />}
 

@@ -390,6 +390,97 @@ export const VisualStudio: React.FC<VisualStudioProps> = ({
                 <span>{exporting === 'banner' ? 'Rendering PNG…' : 'Download banner PNG'}</span>
               </button>
             </div>
+
+            <div className="glass-card p-5 rounded-2xl space-y-3 border border-linkedin-blue/20">
+              <div className="flex items-center space-x-2">
+                <LinkedinIcon className="w-4 h-4 text-linkedin-blue" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-200">
+                  Publish to LinkedIn
+                </h3>
+              </div>
+
+              <p className="text-[11px] text-gray-400 leading-relaxed">
+                Uploads this banner and the current draft. Nothing is posted until you check the
+                confirmation box and press publish.
+              </p>
+
+              {linkedinStatus && (
+                <div className="text-[11px] p-3 rounded-xl bg-[#090d16] border border-gray-800 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-gray-400">Connection</span>
+                    <span
+                      className={`font-bold ${
+                        linkedinStatus.connected ? 'text-emerald-300' : 'text-amber-300'
+                      }`}
+                    >
+                      {linkedinStatus.connected
+                        ? linkedinStatus.member_name || 'Connected'
+                        : 'Not connected'}
+                    </span>
+                  </div>
+                  <p className="text-gray-400 leading-relaxed">{linkedinStatus.reason}</p>
+                </div>
+              )}
+
+              {!draft && (
+                <p className="text-[11px] text-amber-200 bg-amber-950/30 border border-amber-500/20 rounded-xl p-3">
+                  Generate a content draft before publishing.
+                </p>
+              )}
+
+              {linkedinStatus?.connected && draft && (
+                <>
+                  <label className="flex items-start space-x-2 text-[11px] text-gray-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={publishConfirmed}
+                      onChange={(event) => setPublishConfirmed(event.target.checked)}
+                      className="w-4 h-4 accent-linkedin-blue rounded mt-0.5"
+                    />
+                    <span>
+                      I reviewed the draft text and banner. Publish them to my LinkedIn feed now.
+                    </span>
+                  </label>
+
+                  <button
+                    onClick={() => void handlePublish()}
+                    disabled={!publishConfirmed || publishing || !linkedinStatus.can_publish}
+                    className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-linkedin-blue hover:opacity-90 disabled:opacity-50 text-white font-bold text-xs transition-all"
+                  >
+                    {publishing ? (
+                      <RefreshIcon className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <LinkedinIcon className="w-4 h-4" />
+                    )}
+                    <span>{publishing ? 'Publishing…' : 'Publish post + banner'}</span>
+                  </button>
+                </>
+              )}
+
+              {linkedinStatus && !linkedinStatus.connected && (
+                <button
+                  onClick={onNavigateToIntegrations}
+                  className="w-full py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-white text-xs font-semibold border border-gray-700 transition-all"
+                >
+                  Connect LinkedIn in Integrations
+                </button>
+              )}
+
+              {publishResult && (
+                <div className="text-[11px] text-emerald-200 bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-3 space-y-1">
+                  <p className="font-bold">Published to LinkedIn.</p>
+                  <p className="font-mono break-all text-emerald-300">
+                    {publishResult.post_urn ?? publishResult.attempt_id}
+                  </p>
+                </div>
+              )}
+
+              {linkedinError && (
+                <p className="text-[11px] text-red-200 bg-red-950/40 border border-red-500/30 rounded-xl p-3 leading-relaxed">
+                  {linkedinError}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="lg:col-span-7 space-y-4">
