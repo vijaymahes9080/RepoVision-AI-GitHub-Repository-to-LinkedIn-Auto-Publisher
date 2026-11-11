@@ -79,12 +79,8 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index(
-        "ix_linkedin_publish_attempts_status", table_name="linkedin_publish_attempts"
-    )
-    op.drop_index(
-        "ix_linkedin_publish_attempts_draft_id", table_name="linkedin_publish_attempts"
-    )
+    op.drop_index("ix_linkedin_publish_attempts_status", table_name="linkedin_publish_attempts")
+    op.drop_index("ix_linkedin_publish_attempts_draft_id", table_name="linkedin_publish_attempts")
     op.drop_table("linkedin_publish_attempts")
     op.drop_table("linkedin_oauth_states")
     op.drop_index("ix_linkedin_accounts_member_sub", table_name="linkedin_accounts")

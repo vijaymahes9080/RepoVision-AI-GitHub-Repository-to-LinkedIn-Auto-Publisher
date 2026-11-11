@@ -4,7 +4,11 @@ import type {
   ContentDraft,
   DraftStyle,
   EvidenceItem,
+  LinkedInAttempt,
+  LinkedInOAuthStart,
   LinkedInPreflight,
+  LinkedInPublishResult,
+  LinkedInStatus,
   PostLength,
   Verification,
 } from '../types';
@@ -76,6 +80,34 @@ export function getConfigStatus(): Promise<ConfigStatus> {
 
 export function getLinkedInPreflight(): Promise<LinkedInPreflight> {
   return request<LinkedInPreflight>('/linkedin/preflight');
+}
+
+export function getLinkedInStatus(): Promise<LinkedInStatus> {
+  return request<LinkedInStatus>('/linkedin/status');
+}
+
+export function startLinkedInOAuth(): Promise<LinkedInOAuthStart> {
+  return request<LinkedInOAuthStart>('/linkedin/oauth/start', { method: 'POST' });
+}
+
+export function disconnectLinkedIn(): Promise<{ disconnected: number; connected: boolean }> {
+  return request('/linkedin/disconnect', { method: 'POST' });
+}
+
+export function publishToLinkedIn(payload: {
+  draft_id: string;
+  confirm: boolean;
+  commentary?: string;
+  image_base64?: string;
+}): Promise<LinkedInPublishResult> {
+  return request<LinkedInPublishResult>('/linkedin/publish', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function listLinkedInAttempts(): Promise<LinkedInAttempt[]> {
+  return request<LinkedInAttempt[]>('/linkedin/attempts');
 }
 
 export function startAnalysis(

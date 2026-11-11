@@ -9,6 +9,8 @@ os.environ["GITHUB_TOKEN"] = ""
 os.environ["LINKEDIN_CLIENT_ID"] = ""
 os.environ["LINKEDIN_CLIENT_SECRET"] = ""
 os.environ["LINKEDIN_REDIRECT_URI"] = ""
+os.environ["LINKEDIN_ENABLED"] = "false"
+os.environ["TOKEN_ENCRYPTION_KEY"] = ""
 
 import pytest  # noqa: E402
 

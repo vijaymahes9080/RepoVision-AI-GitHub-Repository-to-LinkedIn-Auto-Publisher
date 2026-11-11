@@ -164,7 +164,9 @@ def get_status(db: Session) -> dict:
     if not settings.linkedin_enabled:
         reason = "LINKEDIN_ENABLED is false. Real posting stays disabled until you opt in."
     elif not settings.linkedin_ready:
-        reason = "LinkedIn OAuth is not configured. Add client credentials and TOKEN_ENCRYPTION_KEY."
+        reason = (
+            "LinkedIn OAuth is not configured. Add client credentials and TOKEN_ENCRYPTION_KEY."
+        )
     elif account is None:
         reason = "Connect a LinkedIn member account to publish."
     elif token_expired and not account.refresh_token_encrypted:
@@ -205,9 +207,7 @@ def _commentary_for(draft: ContentDraft, override: str | None) -> str:
     if override is not None and override.strip():
         commentary = override.strip()
     else:
-        tags = " ".join(
-            tag if tag.startswith("#") else f"#{tag}" for tag in (draft.hashtags or [])
-        )
+        tags = " ".join(tag if tag.startswith("#") else f"#{tag}" for tag in (draft.hashtags or []))
         commentary = draft.body.strip()
         if tags:
             commentary = f"{commentary}\n\n{tags}".strip()

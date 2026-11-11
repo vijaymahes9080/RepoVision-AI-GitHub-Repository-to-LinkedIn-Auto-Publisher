@@ -32,7 +32,9 @@ def _safe_error_detail(response: httpx.Response) -> str:
 def _validate_upload_url(upload_url: str) -> str:
     parsed = urlparse(upload_url)
     host = (parsed.hostname or "").lower()
-    if parsed.scheme != "https" or not any(host.endswith(suffix) for suffix in _UPLOAD_HOST_SUFFIXES):
+    if parsed.scheme != "https" or not any(
+        host.endswith(suffix) for suffix in _UPLOAD_HOST_SUFFIXES
+    ):
         raise LinkedInPublishFailed(
             "LinkedIn returned an untrusted image upload URL. The post was not created."
         )
@@ -45,9 +47,7 @@ class LinkedInClient:
     def __init__(self) -> None:
         self._timeout = httpx.Timeout(settings.linkedin_timeout_seconds)
 
-    def build_authorization_url(
-        self, *, state: str, code_challenge: str, redirect_uri: str
-    ) -> str:
+    def build_authorization_url(self, *, state: str, code_challenge: str, redirect_uri: str) -> str:
         if not settings.linkedin_client_id:
             raise LinkedInOAuthError("LINKEDIN_CLIENT_ID is not configured.")
         params = {

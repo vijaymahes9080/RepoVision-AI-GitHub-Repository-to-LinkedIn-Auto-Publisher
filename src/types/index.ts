@@ -234,6 +234,47 @@ export interface LinkedInPreflight {
   note: string;
 }
 
+export interface LinkedInStatus {
+  configured: boolean;
+  publishing_enabled: boolean;
+  connected: boolean;
+  member_name: string | null;
+  member_picture: string | null;
+  scopes: string[];
+  expires_at: string | null;
+  can_publish: boolean;
+  reason: string;
+  required_scopes: string[];
+}
+
+export interface LinkedInOAuthStart {
+  authorization_url: string;
+  state: string;
+  expires_at: string;
+}
+
+export interface LinkedInPublishResult {
+  status: string;
+  attempt_id: string;
+  post_urn: string | null;
+  published_at: string;
+  has_image: boolean;
+}
+
+export interface LinkedInAttempt {
+  id: string;
+  draft_id: string | null;
+  status: string;
+  commentary: string;
+  has_image: boolean;
+  image_urn: string | null;
+  post_urn: string | null;
+  error_code: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type BannerTheme =
   | 'linkedin-pro'
   | 'modern-startup'

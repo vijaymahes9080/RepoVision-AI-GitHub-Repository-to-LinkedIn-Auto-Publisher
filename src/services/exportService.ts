@@ -35,6 +35,10 @@ export async function downloadBannerPng(node: HTMLElement, basename: string): Pr
   return filename;
 }
 
+export async function renderBannerPngDataUrl(node: HTMLElement): Promise<string> {
+  return renderPng(node, 2);
+}
+
 export async function downloadCarouselPdf(
   nodes: HTMLElement[],
   basename: string,

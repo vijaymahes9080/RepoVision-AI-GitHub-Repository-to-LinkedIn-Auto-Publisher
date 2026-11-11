@@ -1,8 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { AnalysisResult, BannerConfig, CarouselSlide } from '../types';
+import type {
+  AnalysisResult,
+  BannerConfig,
+  CarouselSlide,
+  ContentDraft,
+  LinkedInPublishResult,
+  LinkedInStatus,
+} from '../types';
 import { BANNER_THEMES, getDefaultBannerConfig } from '../services/bannerGenerator';
 import { generateDefaultCarousel } from '../services/carouselGenerator';
-import { downloadBannerPng, downloadCarouselPdf } from '../services/exportService';
+import {
+  downloadBannerPng,
+  downloadCarouselPdf,
+  renderBannerPngDataUrl,
+} from '../services/exportService';
+import { getLinkedInStatus, publishToLinkedIn } from '../api/client';
+import { LinkedinIcon } from './Icons';
 import {
   Palette,
   Download,
@@ -21,6 +34,8 @@ import {
 
 interface VisualStudioProps {
   analysis: AnalysisResult | null;
+  draft: ContentDraft | null;
+  onNavigateToIntegrations: () => void;
 }
 
 const SlideCanvas: React.FC<{ slide: CarouselSlide; total: number; fixed?: boolean }> = ({
@@ -95,7 +110,11 @@ const SlideCanvas: React.FC<{ slide: CarouselSlide; total: number; fixed?: boole
   </div>
 );
 
-export const VisualStudio: React.FC<VisualStudioProps> = ({ analysis }) => {
+export const VisualStudio: React.FC<VisualStudioProps> = ({
+  analysis,
+  draft,
+  onNavigateToIntegrations,
+}) => {
   const [mode, setMode] = useState<'banner' | 'carousel'>('banner');
   const [bannerConfig, setBannerConfig] = useState<BannerConfig | null>(
     analysis ? getDefaultBannerConfig(analysis) : null,
@@ -107,9 +126,28 @@ export const VisualStudio: React.FC<VisualStudioProps> = ({ analysis }) => {
   const [exporting, setExporting] = useState<'banner' | 'pdf' | null>(null);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [linkedinStatus, setLinkedinStatus] = useState<LinkedInStatus | null>(null);
+  const [linkedinError, setLinkedinError] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [publishConfirmed, setPublishConfirmed] = useState(false);
+  const [publishResult, setPublishResult] = useState<LinkedInPublishResult | null>(null);
 
   const bannerRef = useRef<HTMLDivElement>(null);
   const deckRef = useRef<HTMLDivElement>(null);
+
+  const loadLinkedInStatus = useCallback(async () => {
+    try {
+      setLinkedinStatus(await getLinkedInStatus());
+      setLinkedinError(null);
+    } catch (error) {
+      setLinkedinStatus(null);
+      setLinkedinError(error instanceof Error ? error.message : 'LinkedIn status failed.');
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadLinkedInStatus();
+  }, [loadLinkedInStatus]);
 
   useEffect(() => {
     if (!analysis) {
@@ -123,6 +161,8 @@ export const VisualStudio: React.FC<VisualStudioProps> = ({ analysis }) => {
     setCurrentSlideIndex(0);
     setExportMessage(null);
     setExportError(null);
+    setPublishResult(null);
+    setPublishConfirmed(false);
   }, [analysis]);
 
   if (!analysis || !bannerConfig) {
@@ -179,6 +219,28 @@ export const VisualStudio: React.FC<VisualStudioProps> = ({ analysis }) => {
       setExportError(error instanceof Error ? error.message : 'PDF export failed.');
     } finally {
       setExporting(null);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!bannerRef.current || !draft) return;
+    setPublishing(true);
+    setLinkedinError(null);
+    setPublishResult(null);
+    try {
+      const image = await renderBannerPngDataUrl(bannerRef.current);
+      const result = await publishToLinkedIn({
+        draft_id: draft.id,
+        confirm: publishConfirmed,
+        image_base64: image,
+      });
+      setPublishResult(result);
+      setPublishConfirmed(false);
+      await loadLinkedInStatus();
+    } catch (error) {
+      setLinkedinError(error instanceof Error ? error.message : 'LinkedIn publishing failed.');
+    } finally {
+      setPublishing(false);
     }
   };
 
