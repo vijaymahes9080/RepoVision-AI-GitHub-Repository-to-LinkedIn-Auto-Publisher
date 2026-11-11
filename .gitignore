@@ -8,6 +8,17 @@ lerna-debug.log*
 
 # Dependencies
 node_modules/
+.venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.db
+*.sqlite3
+.coverage
+htmlcov/
 
 # Production Builds
 dist/
