@@ -1,7 +1,7 @@
 # RepoVision gap analysis
 
-This document separates what M1 actually does from what the original demo claimed and what remains
-for later milestones. It is the reference for "is this real yet?" questions.
+This document separates what RepoVision M2 actually does from what the original demo claimed and what
+remains for later milestones. It is the reference for "is this real yet?" questions.
 
 ## Status legend
 
@@ -12,7 +12,7 @@ for later milestones. It is the reference for "is this real yet?" questions.
 
 ## Capability matrix
 
-| Capability | Status | What exists in M1 | Gap / next milestone |
+| Capability | Status | What exists in M2 | Gap / next milestone |
 | --- | --- | --- | --- |
 | Public GitHub snapshot ingestion | Implemented, limited | Strict URL validation, fixed API host, bounded tree/file/README reads, commit pinning | Live network path not verified from this machine; no private repository support |
 | Evidence index | Implemented | Stored `evidence_items`, stable IDs, excerpts, paths, confidence | No full-file storage; excerpts are capped |
@@ -28,10 +28,10 @@ for later milestones. It is the reference for "is this real yet?" questions.
 | Fact verifier | Implemented, limited | Numbers, URLs, first-person, superlatives, security claims, attribution, technology names | Heuristic rules, not semantic entailment |
 | Banner PNG export | Implemented | Real browser download from rendered node | No server-side rendering |
 | Carousel PDF export | Implemented | Real multi-page 1080×1350 PDF | No automated visual regression test |
-| LinkedIn configuration preflight | Implemented | Required products, scopes, and steps reported | No OAuth flow |
-| LinkedIn OAuth | Not implemented | None | M2: app approval, HTTPS callback, state + PKCE, encrypted token storage |
-| LinkedIn publishing | Not implemented | Always reported disabled | M2: manual-review publish action with explicit confirmation |
-| Scheduling / queue | Not implemented | Disabled panel explaining requirements | M2/M3: durable queue, encrypted tokens, retries, cancel/edit |
+| LinkedIn configuration preflight | Implemented | Required products, scopes, steps, and readiness reported | Live app approval still required |
+| LinkedIn OAuth | Implemented, limited | Authorization code + state + PKCE, encrypted tokens, refresh, disconnect | Live member authorization not verified |
+| LinkedIn publishing | Implemented, limited | Confirmation required, verifier re-run, image upload, `/rest/posts`, audit rows | Live posting not verified; no scheduling or retries |
+| Scheduling / queue | Not implemented | Disabled panel explaining requirements | M3: durable queue, retries, cancel/edit |
 | Engagement analytics | Not implemented | Disabled panel; no charts or metrics | M3: LinkedIn analytics scopes, stored post IDs, ingestion |
 | Video short generation | Not implemented | Disabled panel | M3+: render worker, storage, licensed assets |
 | Blog export | Not implemented | Disabled panel | M3: platform integrations and token storage |
@@ -47,34 +47,37 @@ for later milestones. It is the reference for "is this real yet?" questions.
 | Live LLM integration test | Not verified | Adapters and fallback covered by unit behavior | Add opt-in provider test with a test key/model |
 | Browser E2E exports | Not verified | Export code is real | Add Playwright coverage and inspect generated files |
 
-## LinkedIn: what M1 does and does not do
+## LinkedIn: what M2 does and does not do
 
-M1 reports:
+M2 reports and implements:
 
-- whether all three LinkedIn settings are present as a boolean;
-- the required products: **Sign In with LinkedIn using OpenID Connect** and **Share on LinkedIn**;
-- the required scopes: `openid`, `profile`, `w_member_social`;
-- the implementation steps for M2;
-- `publishing_enabled: false` unconditionally.
+- readiness as booleans: credentials present, token encryption key present, publishing enabled;
+- the required products and scopes;
+- a member OAuth authorization-code flow with `state` and PKCE;
+- server-side token exchange and Fernet-encrypted access/refresh tokens;
+- connection status, token refresh, and disconnect;
+- banner image upload through the LinkedIn Images API;
+- post creation through `/rest/posts` only after `confirm=true` and a fresh verifier pass;
+- an audit row for every publish attempt, with failures stored as `failed`.
 
-M1 does not:
+M2 does not:
 
-- start an OAuth authorization request;
-- accept or store a member access token;
-- call any LinkedIn API;
-- upload media;
-- create, schedule, or publish a post;
-- display a connection, follower count, or engagement metric.
+- publish without explicit user confirmation;
+- store member tokens in the browser or return them from any endpoint;
+- schedule posts, retry automatically, or collect engagement analytics;
+- display follower counts or engagement metrics;
+- claim a post exists without a LinkedIn API response.
 
 Real publishing requires an approved LinkedIn developer app, an HTTPS redirect URI, member consent,
-server-side token encryption, and a review step. Those are M2 deliverables, not configuration toggles.
+and operator-provided credentials plus `TOKEN_ENCRYPTION_KEY`. Those are deployment prerequisites, not
+configuration toggles. Live LinkedIn verification has not been performed.
 
 ## Original claims corrected
 
-| Original claim | M1 reality |
+| Original claim | M2 reality |
 | --- | --- |
 | "Fully cloud-hosted SaaS" | Local frontend + local FastAPI backend; no hosting or accounts |
-| "Publishes directly via official OAuth" | No OAuth or publishing; manual copy and open LinkedIn |
+| "Publishes directly via official OAuth" | Real member OAuth and publishing when configured; disabled by default |
 | "GPT-5.5 engine" | Optional OpenAI-compatible/Ollama provider; deterministic fallback |
 | "30-second short video" | Not implemented |
 | "10-slide carousel" | Ten real slides exported to PDF, but generated only from snapshot facts |
@@ -84,13 +87,11 @@ server-side token encryption, and a review step. Those are M2 deliverables, not 
 | "Scheduled queue" | Not implemented |
 | "342 stars, 89 forks" fixed demo numbers | Live metadata from the analyzed snapshot only |
 
-## Definition of done for closing M1 gaps
-
-The M1 gaps above are intentionally out of scope. Any future milestone should keep these rules:
+## Definition of done for closing the remaining gaps
 
 1. Do not display a metric that was not fetched from a named source.
 2. Do not show a success state until the underlying action completed and returned evidence of success.
 3. Keep first-person and ownership claims blocked until contributor identity is verified.
-4. Keep LinkedIn publishing disabled until OAuth, token storage, and explicit confirmation exist.
+4. Keep publishing behind explicit confirmation, verifier re-runs, and encrypted server-side tokens.
 5. Keep security language descriptive ("pattern match", "review item") rather than evaluative
    ("secure", "grade", "clean").

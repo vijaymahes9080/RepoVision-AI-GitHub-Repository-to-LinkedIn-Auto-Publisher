@@ -35,43 +35,35 @@ M1 exit criteria met:
 
 Known M1 limitations are listed in `REPOVISION_GAP_ANALYSIS.md`.
 
-## M2 — LinkedIn OAuth and controlled publishing
+## M2 — LinkedIn OAuth and controlled publishing (complete, live verification pending)
 
 Goal: publish a verified draft with explicit user consent, without pretending scheduling or analytics
 exist.
 
-Scope:
+Delivered:
 
-1. LinkedIn app integration
-   - Approved **Share on LinkedIn** and **Sign In with LinkedIn using OpenID Connect** products.
-   - HTTPS callback registered for each environment.
-   - Scopes: `openid`, `profile`, `w_member_social`.
-2. OAuth
-   - Authorization code flow with `state` and PKCE.
-   - Server-side exchange; tokens encrypted at rest.
-   - Member identity stored separately from content.
-   - Logout/revocation path.
-3. Publishing
-   - Manual "Publish to LinkedIn" action with a final review screen.
-   - No automatic posting.
-   - Store the returned post URN and timestamp only after a successful API response.
-   - Surface API errors verbatim enough to be actionable, without leaking tokens.
-4. Media
-   - Upload banner PNG through the LinkedIn media flow.
-   - Handle upload failures separately from post failures.
-5. Audit
-   - Persist publish attempts and outcomes.
-   - Never mark a post as published without a provider response.
+- LinkedIn authorization-code flow with `state` and PKCE; the code verifier and tokens are encrypted
+  with Fernet at rest.
+- Connection status, disconnect, and publish-audit endpoints under `/api/v1/linkedin`.
+- Banner PNG upload through the LinkedIn Images API and post creation through `/rest/posts`.
+- Every publish request requires `confirm=true`, re-runs the evidence verifier, and is recorded in
+  `linkedin_publish_attempts`.
+- Frontend connection management in **Integrations** and a publish panel with a review checkbox in
+  **Visual Studio**.
+- Mocked integration tests for OAuth exchange, encrypted storage, status, publish success, verifier
+  rejection, provider failure, and disconnect.
+- Alembic migration `0002_linkedin`.
 
-Acceptance criteria:
+Acceptance criteria status:
 
-- A test member can connect and disconnect.
-- An expired/revoked token produces a clear reconnect path.
-- A failed post never appears as published in the UI or database.
+- Connect and disconnect flows are implemented and covered by mocked tests.
+- An expired token refreshes when a refresh token exists; otherwise the UI reports a reconnect path.
+- A failed post is stored as `failed` and is never shown as published.
 - Token values never appear in API responses, logs, or browser storage.
-- The publish action requires an explicit confirmation step.
+- Publishing requires explicit confirmation.
 
-Open dependency: LinkedIn app approval and API terms. Without approval, M2 cannot ship real posting.
+Open dependency: real posting still requires an approved LinkedIn app, an HTTPS callback, and the
+operator's client ID/secret. Live LinkedIn verification has not been performed.
 
 ## M3 — Scheduling, analytics, and additional formats
 

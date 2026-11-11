@@ -1,15 +1,15 @@
-# RepoVision security notes (M1)
+# RepoVision security notes (M2)
 
 ## Scope
 
-M1 is a local, single-operator application. It analyzes public GitHub repositories and generates
-drafts. It does not have user accounts, roles, multi-tenancy, or LinkedIn publishing. The controls
-below are appropriate for that scope; they are not sufficient for a public multi-user deployment
-without the additional work listed at the end.
+M2 is a local, single-operator application. It analyzes public GitHub repositories, generates drafts,
+and can publish a reviewed post to a connected LinkedIn member. It does not have user accounts, roles,
+or multi-tenancy. The controls below are appropriate for that scope; they are not sufficient for a
+public multi-user deployment without the additional work listed at the end.
 
 ## Threat model
 
-| Threat | M1 control | Residual risk |
+| Threat | M2 control | Residual risk |
 | --- | --- | --- |
 | Server-side request forgery (SSRF) | Strict `https://github.com/{owner}/{repo}` parsing; fixed `https://api.github.com` base; redirects disabled | The fixed GitHub host is still an outbound dependency |
 | Private repository access with a server token | Only public URLs are accepted; a configured token is used for public rate limits | A token with broad scopes could access more than intended if the URL parser were bypassed; review token scopes |
@@ -22,7 +22,12 @@ without the additional work listed at the end.
 | Unauthorized API use | None; no authentication | Anyone who can reach the API can start analyses and read runs if they know/guess IDs |
 | Enumeration of stored runs | Run IDs are UUIDs | UUIDs are not an authorization mechanism |
 | Dependency compromise | Pinned ranges and a CI install step | No SCA gate yet; `npm audit` reports known issues |
-| Token leakage in logs | Tokens are not logged by application code; GitHub errors avoid printing authorization headers | Platform/proxy logs must also be configured carefully |
+| Token leakage in logs | Tokens are not logged by application code; GitHub/LinkedIn errors avoid printing authorization headers | Platform/proxy logs must also be configured carefully |
+| LinkedIn token theft from the database | Access/refresh tokens are Fernet-encrypted at rest; the browser never receives them | Anyone with both the database and `TOKEN_ENCRYPTION_KEY` can decrypt them; protect both |
+| OAuth CSRF / code interception | Single-use `state`, PKCE `S256`, a 10-minute state TTL, and server-side code exchange | Compromised browser extensions can still influence the user's session |
+| Posting without consent | `confirm=true` is required, the UI uses an explicit review checkbox, and the verifier re-runs before posting | An operator with direct API access can still call publish intentionally |
+| Fake publish success | A row is marked published only after a LinkedIn API response; the post URN is stored | A network timeout after LinkedIn accepted the post may leave an ambiguous result |
+| Untrusted image upload URL | Upload hosts must be HTTPS and end in `.licdn.com` or `.linkedin.com` | Domain allowlists do not validate the content LinkedIn serves |
 
 ## Secrets
 
@@ -31,15 +36,19 @@ All secrets are server-side environment variables:
 - `GITHUB_TOKEN`
 - `OPENAI_API_KEY`
 - `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_REDIRECT_URI`
+- `TOKEN_ENCRYPTION_KEY` (Fernet key for member tokens at rest)
 
 Rules:
 
 - Never place secrets in `VITE_*` variables. Vite inlines those into the public bundle.
 - Never commit `.env` files. `.gitignore` excludes `.env`, `.env.local`, and related variants.
 - `backend/.env.example` contains names and safe placeholders only.
-- The config endpoint exposes `github_token_configured`, `llm_configured`, and
-  `linkedin_configured` as booleans. It never returns values.
-- LinkedIn publishing is hard-coded to `false` in M1, even when credentials are present.
+- The config endpoint exposes `github_token_configured`, `llm_configured`,
+  `linkedin_configured`, and `linkedin_publishing_enabled` as booleans. It never returns values.
+- LinkedIn publishing is opt-in (`LINKEDIN_ENABLED=false` by default) and requires credentials plus
+  `TOKEN_ENCRYPTION_KEY`.
+- Member access and refresh tokens are encrypted with Fernet before storage. They are never returned
+  to the browser, included in status responses, or logged.
 - Rotate any credential that was ever committed to git history or pasted into a client-side file.
   The deleted demo contained a hard-coded LinkedIn client ID; treat it as compromised/invalid.
 
@@ -102,17 +111,33 @@ provider's data policy. This is documented here so operators can make an informe
   `X-Request-ID`.
 - Responses include an `X-Request-ID` for correlation.
 - Application errors use a consistent envelope and do not include stack traces.
-- The frontend stores only the active run ID in `localStorage`. Drafts and analysis results are held
-  in memory for the session.
-- Exports are rendered and downloaded locally. No media is uploaded.
+- The frontend stores only the active run ID in `localStorage`. Drafts, analysis results, and LinkedIn
+  tokens are held in memory or on the server for the session.
+- Exports are rendered locally. Publishing uploads the rendered banner to LinkedIn only after an
+  explicit confirmation, and no media is stored on the RepoVision server.
+
+## LinkedIn publishing controls
+
+- OAuth uses an authorization-code flow with a single-use `state`, PKCE `S256`, and a 10-minute
+  state TTL. The PKCE verifier is encrypted at rest.
+- The server exchanges the code and uses the fixed LinkedIn token, userinfo, image, and posts hosts.
+- Access tokens refresh when a refresh token exists; otherwise the UI asks the member to reconnect.
+- Publish requests must include `confirm=true`. The backend re-runs the evidence verifier against the
+  stored analysis and rejects unsupported commentary before any LinkedIn call.
+- Commentary is limited to 3,000 characters and images to 8 MB PNG, matching LinkedIn limits.
+- Every attempt is written to `linkedin_publish_attempts` with `pending`, `published`, or `failed`
+  status. Tokens are never stored in that table.
+- Image upload URLs returned by LinkedIn must be HTTPS and end in `.licdn.com` or `.linkedin.com`.
 
 ## Data handling
 
 - Analysis results, evidence excerpts, and drafts are stored in the configured database.
 - Evidence excerpts are capped and redacted, but they still contain repository content.
-- There is no automatic retention or deletion job in M1. A local SQLite database persists until
+- There is no automatic retention or deletion job in M2. A local SQLite database persists until
   deleted.
-- No analytics, LinkedIn profile data, or member tokens are collected.
+- LinkedIn member identity, encrypted access/refresh tokens, OAuth state, and publish attempts are
+  stored. Browser session data does not include tokens.
+- No analytics or engagement data is collected.
 - There are no user accounts, so all runs are effectively owned by the operator.
 
 Deployments must add retention, deletion, and access controls before handling third-party data at
@@ -130,7 +155,7 @@ scale.
 Review and upgrade dependencies deliberately, then re-run lint, build, and tests.
 
 The backend installs pinned major ranges from `pyproject.toml`. There is no automated Python
-dependency vulnerability scan in M1; add one (for example `pip-audit`) in CI.
+dependency vulnerability scan in M2; add one (for example `pip-audit`) in CI.
 
 ## Required before public/multi-user deployment
 
@@ -141,8 +166,9 @@ dependency vulnerability scan in M1; add one (for example `pip-audit`) in CI.
 5. Durable queue with isolated workers.
 6. Retention, export, and deletion controls.
 7. Dependency scanning and a patch cadence.
-8. Audit logging for publish attempts and administrative actions.
-9. LinkedIn OAuth with `state`, PKCE, token encryption, and revocation.
+8. Audit logging for administrative actions (publish attempts are already recorded).
+9. LinkedIn token revocation on disconnect and key-rotation procedures (disconnect deletes the local
+   row; revoke access in LinkedIn as well when decommissioning).
 10. A reviewed privacy policy covering repository content and optional LLM processing.
 
 ## Reporting a vulnerability

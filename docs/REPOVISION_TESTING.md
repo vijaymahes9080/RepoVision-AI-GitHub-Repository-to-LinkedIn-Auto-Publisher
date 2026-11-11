@@ -18,8 +18,8 @@ Commands and actual results:
 | Command | Result |
 | --- | --- |
 | `.\.venv\Scripts\python -m ruff check app tests migrations` | All checks passed |
-| `.\.venv\Scripts\python -m pytest` | 26 passed, 1 warning in 2.59s |
-| `alembic upgrade head` then `alembic downgrade base` with `DATABASE_URL=sqlite:///./migration_test.db` | Both migrations succeeded; temporary database removed |
+| `.\.venv\Scripts\python -m pytest` | 38 passed, 1 warning |
+| `alembic upgrade head` then `alembic downgrade base` with `DATABASE_URL=sqlite:///./migration_test.db` | Both migrations (`0001_initial`, `0002_linkedin`) upgraded and downgraded; temporary database removed |
 
 The single pytest warning is a Starlette deprecation notice about installing `httpx2` for
 `TestClient`. It is not a test failure.
@@ -32,15 +32,19 @@ The single pytest warning is a Starlette deprecation notice about installing `ht
 | `tests/test_analysis.py` | Technology, feature, route, testing/CI, license, and security extraction; evidence linkage; redaction; snapshot-derived metrics |
 | `tests/test_verifier.py` | First-person, number, URL, superlative, attribution, technology, and security-claim rejection; grounded draft passes verification; no invented features when the README lacks them |
 | `tests/test_api.py` | Health/config honesty, LinkedIn preflight, invalid URL error contract, full mocked GitHub analysis → evidence → draft → verify flow, rate-limit failure handling |
+| `tests/test_linkedin.py` | OAuth opt-in, state + PKCE start, callback token encryption, reused-state rejection, status, confirmation requirement, not-connected path, verifier rejection, image upload + publish success, failed-attempt auditing, disconnect, and config reflection |
 
 Notable assertions:
 
-- `/config/status` never contains secret values and reports publishing disabled.
-- Scheduler, analytics, and LinkedIn publishing capabilities are reported disabled with reasons.
+- `/config/status` never contains secret values and reports publishing disabled while `LINKEDIN_ENABLED=false`.
+- Scheduler and analytics capabilities are reported disabled with reasons.
 - Injected credentials in test files are redacted from evidence and findings.
 - `dependency_scan.status == "not_run"` and `vulnerabilities_found is None`.
 - A rate-limited GitHub response yields a failed run with `GITHUB_RATE_LIMITED`, not a partial result.
 - Drafts produced by the deterministic generator pass the verifier and stay under 2,900 characters.
+- LinkedIn access and refresh tokens are stored as ciphertext and only decrypt with the configured key.
+- A publish attempt is stored as `failed` when LinkedIn returns an error and only becomes `published`
+  after a real API response with a post URN.
 
 ## Frontend
 
@@ -59,7 +63,10 @@ change dependency behavior without review.
 
 ## Migration verification
 
-The initial Alembic revision was applied and rolled back against a temporary SQLite database:
+The Alembic revisions were applied and rolled back against a temporary SQLite database, including
+`0002_linkedin`. PostgreSQL was not available in this environment. The models use portable SQLAlchemy
+types and `psycopg` is a declared dependency, but a PostgreSQL migration run remains unverified and is
+tracked in the gap analysis.
 
 ```powershell
 cd backend
@@ -68,10 +75,6 @@ $env:DATABASE_URL='sqlite:///./migration_test.db'
 .\.venv\Scripts\alembic downgrade base
 Remove-Item -Force migration_test.db
 ```
-
-PostgreSQL was not available in this environment. The models use portable SQLAlchemy types and
-`psycopg` is a declared dependency, but a PostgreSQL migration run remains unverified and is tracked
-in the gap analysis.
 
 ## Manual verification checklist
 

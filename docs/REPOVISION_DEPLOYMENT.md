@@ -1,8 +1,11 @@
-# RepoVision deployment guide (M1)
+# RepoVision deployment guide (M2)
 
-M1 runs as two local processes: a FastAPI backend and a Vite frontend. This guide covers local setup,
+M2 runs as two local processes: a FastAPI backend and a Vite frontend. This guide covers local setup,
 a production-style deployment, and known hosting limits. Docker and PostgreSQL were not available in
 the development environment, so those paths are documented but unverified here.
+
+LinkedIn publishing additionally requires an approved LinkedIn developer app, a public HTTPS callback,
+server-side credentials, and a Fernet token-encryption key.
 
 ## Prerequisites
 
@@ -12,6 +15,7 @@ the development environment, so those paths are documented but unverified here.
 - Optional: PostgreSQL 15+ and Docker
 - Optional: a GitHub token for higher API rate limits
 - Optional: an OpenAI-compatible API key or a local Ollama model
+- Optional: an approved LinkedIn app for publishing
 
 ## Backend setup
 
@@ -109,9 +113,24 @@ The build output is `dist/`.
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server |
 | `OLLAMA_MODEL` | `llama3.1` | Ollama model |
 | `LLM_TIMEOUT_SECONDS` | `60` | Provider timeout |
-| `LINKEDIN_CLIENT_ID` | empty | Optional; M1 preflight only |
-| `LINKEDIN_CLIENT_SECRET` | empty | Optional; M1 preflight only |
-| `LINKEDIN_REDIRECT_URI` | empty | Optional; M1 preflight only |
+| `LINKEDIN_CLIENT_ID` | empty | Required for OAuth; server-side only |
+| `LINKEDIN_CLIENT_SECRET` | empty | Required for OAuth; server-side only |
+| `LINKEDIN_REDIRECT_URI` | empty | Exact registered HTTPS callback |
+| `LINKEDIN_ENABLED` | `false` | Explicit opt-in for real posting |
+| `LINKEDIN_API_VERSION` | `202501` | `LinkedIn-Version` request header |
+| `TOKEN_ENCRYPTION_KEY` | empty | Fernet key for member tokens at rest |
+| `FRONTEND_URL` | `http://localhost:5173` | OAuth redirect destination |
+
+LinkedIn setup:
+
+1. Create a LinkedIn developer app and associate it with a verified company page.
+2. Request **Sign In with LinkedIn using OpenID Connect** and **Share on LinkedIn**.
+3. Register `https://<api-host>/api/v1/linkedin/oauth/callback` as an allowed redirect URI.
+4. Put the client ID, secret, and exact redirect URI in the server environment.
+5. Generate `TOKEN_ENCRYPTION_KEY` once and store it in a secret manager:
+   `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`.
+6. Set `LINKEDIN_ENABLED=true` only after the app is approved.
+7. Keep the frontend origin in `FRONTEND_URL` and `CORS_ORIGINS` consistent.
 
 `VITE_API_BASE_URL` is a frontend build-time variable. It must be a public URL and must never contain
 a secret. When unset, the frontend uses same-origin `/api/v1`.
@@ -136,7 +155,7 @@ production use.
 
 ## Production-style deployment
 
-M1 does not include a Dockerfile, Compose file, or infrastructure templates. A minimal production
+M2 does not include a Dockerfile, Compose file, or infrastructure templates. A minimal production
 setup is:
 
 1. Build the frontend with the public API URL:
@@ -157,7 +176,8 @@ setup is:
 5. Proxy `/api` to the FastAPI process. Serving the frontend and API on the same origin avoids CORS.
 6. Set `CORS_ORIGINS` to the exact frontend origin if they are separated.
 7. Use PostgreSQL and a managed secret store.
-8. Persist uploads/exports only if you add server-side storage; M1 exports happen in the browser.
+8. Persist uploads/exports only if you add server-side storage; M2 exports happen in the browser and
+   publishing sends the rendered banner directly to LinkedIn.
 9. Add authentication before exposing the API to untrusted users.
 10. Replace the in-process background task with a durable queue for production workloads.
 
@@ -219,11 +239,14 @@ authorization headers. Use a reverse proxy that redacts sensitive headers if you
 | UI shows "API offline" | Backend not running or wrong base URL | Start uvicorn; check `/api/v1/health`; confirm `VITE_API_BASE_URL` |
 | Browser CORS error | Frontend origin missing from `CORS_ORIGINS` | Add the exact scheme/host/port and restart the backend |
 | `GITHUB_RATE_LIMITED` | Public GitHub rate limit | Configure `GITHUB_TOKEN` server-side, then retry |
-| `REPOSITORY_NOT_FOUND` | Private or missing repository | Only public repositories are supported in M1 |
+| `REPOSITORY_NOT_FOUND` | Private or missing repository | Only public repositories are supported |
 | Migration error | Wrong `DATABASE_URL` or stale local database | Verify the URL; recreate a local SQLite database if appropriate |
 | LLM always falls back | Provider not configured or output failed verification | Check server logs, provider credentials, and model name |
 | Export fails | Browser capture failure | Check the console; exports use DOM rendering and may fail in restricted browsers |
-| LinkedIn shows "credentials present" but publishing disabled | Expected M1 behavior | Implement M2 OAuth and publishing |
+| `LINKEDIN_PUBLISHING_DISABLED` | `LINKEDIN_ENABLED` is false | Enable it after the LinkedIn app is approved |
+| `LINKEDIN_NOT_CONFIGURED` | Missing client credentials or `TOKEN_ENCRYPTION_KEY` | Set all four values and restart the backend |
+| OAuth redirect error | Redirect URI mismatch or expired state | Match the registered URI exactly; retry the connection from Integrations |
+| Publish rejected by verifier | Commentary contains unsupported claims | Regenerate/fix the draft, re-run verification, then publish |
 | Pages deployment loads but API fails | Static hosting has no backend | Set `VITE_API_BASE_URL` and deploy the API separately |
 
 ## Deployment checklist
@@ -236,5 +259,7 @@ authorization headers. Use a reverse proxy that redacts sensitive headers if you
 - [ ] Secrets live in a secret store, not in the frontend bundle.
 - [ ] Backend tests and frontend build pass on the deployment commit.
 - [ ] A GitHub token with minimal scopes is configured if rate limits matter.
-- [ ] LinkedIn publishing is understood to be disabled.
+- [ ] LinkedIn app is approved and `LINKEDIN_ENABLED=true` is intentional.
+- [ ] `LINKEDIN_REDIRECT_URI` exactly matches the registered HTTPS callback.
+- [ ] `TOKEN_ENCRYPTION_KEY` is stored in a secret manager and backed up.
 - [ ] Retention and backup expectations are documented for your environment.
