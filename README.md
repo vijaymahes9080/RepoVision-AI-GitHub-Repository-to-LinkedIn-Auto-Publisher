@@ -22,12 +22,14 @@ or produce security grades. No sample data is used to pretend that a disabled fe
   declarations, testing/CI signals, license, and static security patterns.
 - An evidence index. Every technology, feature, and security finding references stored evidence IDs.
 - Grounded draft generation with style and length options.
-- Optional OpenAI-compatible or Ollama provider; deterministic fallback when none is configured.
+- Multi-LLM engine supporting Google Gemini, xAI Grok, Groq, OpenRouter, DeepSeek, OpenAI, Ollama, and built-in deterministic fallback.
 - A fact verifier for unsupported numbers, external URLs, first-person claims, superlatives,
   security guarantees, attribution, and unsupported technologies.
 - Real browser-side exports: banner PNG via `html-to-image`, carousel PDF via `jsPDF`.
-- LinkedIn member OAuth with state + PKCE, encrypted token storage, image upload, and post creation
-  through the LinkedIn REST API.
+- LinkedIn member OAuth with state + PKCE, Direct Access Token support, encrypted token storage, image upload, and post creation through the LinkedIn REST API.
+- Turnkey Windows one-click scripts: `install.bat`, `run.bat`, and `test.bat`.
+- Terminal LinkedIn Bot CLI (`linkedin_bot.py`) for automated repository analysis and publishing.
+- Playwright end-to-end browser automation suite (`scripts/e2e_verify.py`).
 - Explicit publish confirmation plus a fresh evidence verification before every post.
 - Honest configuration, LinkedIn preflight, and connection status screens.
 
@@ -65,6 +67,19 @@ Repository code is never cloned, installed, built, or executed. The backend read
 ## Quick start
 
 Requirements: Python 3.12+, Node.js 20.19+ or 22.12+.
+
+### Turnkey One-Click Start (Windows)
+
+1. **Install Dependencies & Initialize Database**:
+   Double-click `install.bat` (or run `./install.bat` in PowerShell). This configures the Python virtual environment, installs backend and frontend packages, generates the Fernet `TOKEN_ENCRYPTION_KEY`, initializes `.env`, and stamps the database.
+2. **Launch Application**:
+   Double-click `run.bat`. This concurrently boots the FastAPI backend on `http://127.0.0.1:8000` and the Vite frontend on `http://localhost:5173`, then automatically opens your browser.
+3. **Run Full Verification Suite**:
+   Double-click `test.bat`. Runs backend pytest (38 tests), frontend build/lint, and Playwright E2E browser automation.
+
+---
+
+### Manual Setup
 
 ### 1. Backend
 
@@ -124,13 +139,24 @@ All secrets are server-side environment variables. See `backend/.env.example` fo
 | `DATABASE_URL` | `sqlite:///./repovision.db` | Use `postgresql+psycopg://...` for PostgreSQL |
 | `CORS_ORIGINS` | local Vite origins | Comma-separated exact origins |
 | `GITHUB_TOKEN` | empty | Optional; raises GitHub API rate limits |
-| `LLM_PROVIDER` | `none` | `none`, `openai`, or `ollama` |
+| `LLM_PROVIDER` | `none` | `none`, `gemini`, `grok`, `groq`, `openrouter`, `deepseek`, `openai`, or `ollama` |
+| `GEMINI_API_KEY` | empty | Google Gemini API Key |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | Gemini model name |
+| `GROK_API_KEY` | empty | xAI Grok API Key |
+| `GROK_MODEL` | `grok-2-latest` | Grok model name |
+| `GROQ_API_KEY` | empty | Groq Cloud API Key (open-source fast inference) |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Open-source model name |
+| `OPENROUTER_API_KEY` | empty | OpenRouter API Key |
+| `OPENROUTER_MODEL` | `deepseek/deepseek-chat` | Model routed through OpenRouter |
+| `DEEPSEEK_API_KEY` | empty | DeepSeek Direct API Key |
+| `DEEPSEEK_MODEL` | `deepseek-chat` | DeepSeek model name |
 | `OPENAI_API_KEY` | empty | Server-side only |
 | `OPENAI_MODEL` | `gpt-4o-mini` | Model name |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Local Ollama server |
 | `OLLAMA_MODEL` | `llama3.1` | Model name |
 | `LINKEDIN_CLIENT_*` | empty | Required for OAuth; set on the server only |
 | `LINKEDIN_REDIRECT_URI` | empty | Registered HTTPS callback ending in `/api/v1/linkedin/oauth/callback` |
+| `LINKEDIN_ACCESS_TOKEN` | empty | Optional direct Developer/Bot Access Token |
 | `LINKEDIN_ENABLED` | `false` | Explicit opt-in for real posting |
 | `TOKEN_ENCRYPTION_KEY` | empty | Fernet key used to encrypt member tokens at rest |
 | `FRONTEND_URL` | `http://localhost:5173` | Destination for the OAuth redirect |

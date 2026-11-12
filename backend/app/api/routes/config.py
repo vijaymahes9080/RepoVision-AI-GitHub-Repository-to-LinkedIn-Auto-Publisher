@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.db import get_db
 from app.schemas import CapabilityOut, ConfigStatusResponse, LinkedInPreflightResponse
+from app.services import linkedin as linkedin_service
 
 router = APIRouter(tags=["config"])
 
@@ -11,7 +14,7 @@ _LINKEDIN_SCOPES = ["openid", "profile", "w_member_social"]
 _LINKEDIN_PRODUCTS = ["Sign In with LinkedIn using OpenID Connect", "Share on LinkedIn"]
 
 
-def _capabilities() -> list[CapabilityOut]:
+def _capabilities(publishing_allowed: bool) -> list[CapabilityOut]:
     return [
         CapabilityOut(
             id="analysis",
@@ -49,12 +52,14 @@ def _capabilities() -> list[CapabilityOut]:
         CapabilityOut(
             id="linkedin_publishing",
             label="LinkedIn publishing",
-            enabled=settings.linkedin_publishing_allowed,
+            enabled=publishing_allowed,
             reason=(
-                "Member OAuth, encrypted token storage, image upload, and posting are wired up. "
-                "Set LINKEDIN_ENABLED=true and configure the LinkedIn app credentials to publish."
-                if not settings.linkedin_publishing_allowed
-                else "Publishing is enabled. Every post still requires explicit confirmation."
+                "Publishing is enabled. Every post still requires explicit confirmation."
+                if publishing_allowed
+                else (
+                    "Member OAuth, encrypted token storage, image upload, and posting are wired up. "
+                    "Set LINKEDIN_ENABLED=true and configure the LinkedIn app credentials to publish."
+                )
             ),
         ),
     ]
@@ -80,7 +85,11 @@ def _llm_model() -> str | None:
 
 
 @router.get("/config/status", response_model=ConfigStatusResponse)
-def config_status() -> ConfigStatusResponse:
+def config_status(db: Session = Depends(get_db)) -> ConfigStatusResponse:
+    linkedin_st = linkedin_service.get_status(db)
+    is_publishing_enabled = settings.linkedin_publishing_allowed or linkedin_st["publishing_enabled"]
+    is_configured = settings.linkedin_ready or linkedin_st["configured"]
+
     return ConfigStatusResponse(
         app_version=settings.app_version,
         environment=settings.app_env,
@@ -89,12 +98,12 @@ def config_status() -> ConfigStatusResponse:
         llm_provider=settings.llm_provider,
         llm_configured=settings.llm_configured,
         llm_model=_llm_model(),
-        linkedin_configured=settings.linkedin_ready,
-        linkedin_publishing_enabled=settings.linkedin_publishing_allowed,
+        linkedin_configured=is_configured,
+        linkedin_publishing_enabled=is_publishing_enabled,
         linkedin_required_scopes=_LINKEDIN_SCOPES,
         analysis_engine="deterministic-v1",
         cors_origins=settings.cors_origin_list,
-        capabilities=_capabilities(),
+        capabilities=_capabilities(is_publishing_enabled),
     )
 
 

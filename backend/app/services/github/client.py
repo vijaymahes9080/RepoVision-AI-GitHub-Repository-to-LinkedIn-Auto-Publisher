@@ -25,7 +25,7 @@ class GitHubClient:
             base_url=settings.github_api_base,
             headers=headers,
             timeout=httpx.Timeout(settings.github_timeout_seconds),
-            follow_redirects=False,
+            follow_redirects=True,
         )
 
     def close(self) -> None:

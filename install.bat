@@ -32,6 +32,7 @@ echo [2/5] Installing backend dependencies...
 backend\.venv\Scripts\python -m pip install --upgrade pip
 backend\.venv\Scripts\python -m pip install -e "backend[dev]"
 backend\.venv\Scripts\python -m pip install playwright
+backend\.venv\Scripts\python -m playwright install chromium
 
 :: 4. Frontend Dependencies
 echo [3/5] Installing frontend dependencies...

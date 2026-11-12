@@ -80,8 +80,8 @@ must be a public, non-secret URL.
 | `app/services/content/verifier.py` | Claim and content checks against stored evidence |
 | `app/services/linkedin/crypto.py` | Fernet encryption/decryption for member tokens |
 | `app/services/linkedin/client.py` | Fixed-host OAuth, userinfo, image upload, and post client |
-| `app/services/linkedin/service.py` | OAuth state/PKCE, status, refresh, publish orchestration, audit |
-| `app/services/llm/*` | Provider interface, OpenAI-compatible and Ollama adapters, factory |
+| `app/services/linkedin/service.py` | OAuth state/PKCE, direct token connect, status, refresh, publish orchestration, audit |
+| `app/services/llm/*` | Provider interface, multi-model engine (Gemini, Grok, Groq, OpenRouter, DeepSeek, OpenAI, Ollama), factory |
 | `migrations/` | Alembic environment and schema revisions (`0001_initial`, `0002_linkedin`) |
 
 ## API
@@ -103,6 +103,7 @@ All routes are under `/api/v1`.
 | POST | `/linkedin/oauth/start` | Start member OAuth with state + PKCE |
 | GET | `/linkedin/oauth/callback` | Exchange the code, encrypt tokens, redirect to the frontend |
 | GET | `/linkedin/status` | Connection readiness and member display name |
+| POST | `/linkedin/connect-token` | Connect member directly using a Developer Access Token |
 | POST | `/linkedin/disconnect` | Delete the stored connection |
 | POST | `/linkedin/publish` | Confirm, verify, upload the banner, and create the post |
 | GET | `/linkedin/attempts` | Audit rows for publish attempts |

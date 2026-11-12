@@ -3,6 +3,18 @@
 Date of last verified run: 2026-11-11
 Environment: Windows, Python 3.12.10, Node.js/npm, SQLite only (no PostgreSQL or Docker).
 
+## Automated Test & Run Scripts (Windows)
+
+RepoVision provides three turn-key batch scripts for automated setup, execution, and testing:
+
+| Script | Responsibility | Command Equivalent |
+| --- | --- | --- |
+| `install.bat` | One-click environment bootstrap | Sets up venv, installs Python & Node packages, generates Fernet `TOKEN_ENCRYPTION_KEY`, creates `.env`, and stamps Alembic head. |
+| `run.bat` | One-click dual-server boot | Concurrently starts FastAPI backend (:8000) and Vite frontend (:5173), and opens the browser. |
+| `test.bat` | Comprehensive test runner | Executes pytest (38 tests), frontend build/lint, and Playwright E2E browser automation. |
+
+---
+
 ## Backend
 
 Setup:
