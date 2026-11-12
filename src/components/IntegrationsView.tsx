@@ -100,6 +100,29 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ config }) =>
     }
   };
 
+  const handleConnectDirect = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directToken.trim()) return;
+    setConnectingDirect(true);
+    setStatusError(null);
+    setActionMessage(null);
+    try {
+      const updated = await connectLinkedInDirectToken({
+        access_token: directToken.trim(),
+        member_name: directName.trim() || undefined,
+      });
+      setStatus(updated);
+      setActionMessage(`Connected directly as ${updated.member_name || 'LinkedIn Member'}`);
+      setDirectToken('');
+      setShowDirectInput(false);
+      await loadPreflight();
+    } catch (error) {
+      setStatusError(error instanceof Error ? error.message : 'Direct token connection failed.');
+    } finally {
+      setConnectingDirect(false);
+    }
+  };
+
   const linkedInConfigured = preflight?.configured ?? config?.linkedin_configured ?? false;
   const publishingEnabled =
     preflight?.publishing_enabled ?? config?.linkedin_publishing_enabled ?? false;
@@ -290,17 +313,79 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ config }) =>
                   {disconnecting ? 'Disconnecting…' : 'Disconnect'}
                 </button>
               ) : (
-                <button
-                  onClick={() => void handleConnect()}
-                  disabled={connecting || !publishingEnabled}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-linkedin-blue hover:opacity-90 disabled:opacity-50 text-white text-xs font-bold transition-all"
-                >
-                  <LinkedinIcon className="w-4 h-4" />
-                  <span>{connecting ? 'Redirecting…' : 'Connect LinkedIn'}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowDirectInput((prev) => !prev)}
+                    className="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold border border-gray-700 transition-all"
+                  >
+                    {showDirectInput ? 'Cancel' : 'Paste Token'}
+                  </button>
+                  <button
+                    onClick={() => void handleConnect()}
+                    disabled={connecting || !publishingEnabled}
+                    className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-linkedin-blue hover:opacity-90 disabled:opacity-50 text-white text-xs font-bold transition-all"
+                  >
+                    <LinkedinIcon className="w-4 h-4" />
+                    <span>{connecting ? 'Redirecting…' : 'Connect LinkedIn'}</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
+
+          {showDirectInput && !status?.connected && (
+            <form
+              onSubmit={(e) => void handleConnectDirect(e)}
+              className="p-4 rounded-xl bg-[#0d1322] border border-indigo-500/30 space-y-3 animate-fadeIn"
+            >
+              <div className="flex items-center space-x-2 text-indigo-300 font-semibold text-xs">
+                <Lock className="w-3.5 h-3.5" />
+                <span>Direct Access Token Connection (Bot / Developer Token)</span>
+              </div>
+              <p className="text-[11px] text-gray-400">
+                Paste your LinkedIn Developer Access Token directly. It will be encrypted at rest on the server with Fernet and used to publish posts.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Access Token *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="AQ..."
+                    value={directToken}
+                    onChange={(e) => setDirectToken(e.target.value)}
+                    className="w-full px-3 py-1.5 bg-[#090d16] border border-gray-700 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Member Name (optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Vijay Mahesh"
+                    value={directName}
+                    onChange={(e) => setDirectName(e.target.value)}
+                    className="w-full px-3 py-1.5 bg-[#090d16] border border-gray-700 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowDirectInput(false)}
+                  className="px-3 py-1.5 text-xs text-gray-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={connectingDirect || !directToken.trim()}
+                  className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs"
+                >
+                  {connectingDirect ? 'Saving…' : 'Save & Connect'}
+                </button>
+              </div>
+            </form>
+          )}
 
           {actionMessage && (
             <p className="text-[11px] text-emerald-200 bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-3">
