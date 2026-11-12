@@ -310,18 +310,20 @@ def publish(db: Session, payload: LinkedInPublishRequest) -> dict:
             "LinkedIn publishing is disabled. Set LINKEDIN_ENABLED=true after the LinkedIn app "
             "is approved."
         )
-    if not settings.linkedin_ready:
-        raise LinkedInNotConfigured(
-            "LinkedIn OAuth is not configured. Add client credentials and TOKEN_ENCRYPTION_KEY."
-        )
-    if not payload.confirm:
-        raise LinkedInPublishConfirmationRequired(
-            "Publishing requires confirm=true after reviewing the post and image."
-        )
 
     account = db.query(LinkedInAccount).order_by(LinkedInAccount.connected_at.desc()).first()
     if account is None:
         raise LinkedInNotConnected("Connect a LinkedIn account before publishing.")
+
+    if not settings.token_encryption_key:
+        raise LinkedInNotConfigured(
+            "TOKEN_ENCRYPTION_KEY is not configured on the server."
+        )
+
+    if not payload.confirm:
+        raise LinkedInPublishConfirmationRequired(
+            "Publishing requires confirm=true after reviewing the post and image."
+        )
 
     draft = db.get(ContentDraft, payload.draft_id)
     if draft is None:
