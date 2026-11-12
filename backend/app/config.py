@@ -31,17 +31,28 @@ class Settings(BaseSettings):
     max_total_bytes: int = 2_000_000
     max_readme_bytes: int = 150_000
 
-    llm_provider: str = "none"  # none | openai | ollama
+    llm_provider: str = "none"  # none | openai | ollama | gemini | grok | groq | openrouter | deepseek
     openai_api_key: str | None = None
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o-mini"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.1"
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"
+    grok_api_key: str | None = None
+    grok_model: str = "grok-2-latest"
+    groq_api_key: str | None = None
+    groq_model: str = "llama-3.3-70b-versatile"
+    openrouter_api_key: str | None = None
+    openrouter_model: str = "deepseek/deepseek-chat"
+    deepseek_api_key: str | None = None
+    deepseek_model: str = "deepseek-chat"
     llm_timeout_seconds: float = 60.0
 
     linkedin_client_id: str | None = None
     linkedin_client_secret: str | None = None
     linkedin_redirect_uri: str | None = None
+    linkedin_access_token: str | None = None
     # Explicit opt-in for real posting. Keep false until the LinkedIn app is approved.
     linkedin_enabled: bool = False
     linkedin_api_base: str = "https://api.linkedin.com"
@@ -67,16 +78,28 @@ class Settings(BaseSettings):
 
     @property
     def llm_configured(self) -> bool:
-        if self.llm_provider == "openai":
+        provider = self.llm_provider.strip().lower()
+        if provider in {"openai", "openai_compatible", "openai-compatible"}:
             return bool(self.openai_api_key)
-        if self.llm_provider == "ollama":
+        if provider == "ollama":
             return bool(self.ollama_base_url and self.ollama_model)
+        if provider == "gemini":
+            return bool(self.gemini_api_key or self.openai_api_key)
+        if provider in {"grok", "xai"}:
+            return bool(self.grok_api_key or self.openai_api_key)
+        if provider == "groq":
+            return bool(self.groq_api_key or self.openai_api_key)
+        if provider == "openrouter":
+            return bool(self.openrouter_api_key or self.openai_api_key)
+        if provider == "deepseek":
+            return bool(self.deepseek_api_key or self.openai_api_key)
         return False
 
     @property
     def linkedin_configured(self) -> bool:
         return bool(
-            self.linkedin_client_id and self.linkedin_client_secret and self.linkedin_redirect_uri
+            (self.linkedin_client_id and self.linkedin_client_secret and self.linkedin_redirect_uri)
+            or self.linkedin_access_token
         )
 
     @property

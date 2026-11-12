@@ -66,6 +66,16 @@ def _llm_model() -> str | None:
         return settings.openai_model
     if provider == "ollama":
         return settings.ollama_model
+    if provider == "gemini":
+        return settings.gemini_model
+    if provider in {"grok", "xai"}:
+        return settings.grok_model
+    if provider == "groq":
+        return settings.groq_model
+    if provider == "openrouter":
+        return settings.openrouter_model
+    if provider == "deepseek":
+        return settings.deepseek_model
     return None
 
 

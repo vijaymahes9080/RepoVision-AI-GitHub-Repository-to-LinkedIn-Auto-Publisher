@@ -12,6 +12,7 @@ from app.db import get_db
 from app.models import LinkedInPublishAttempt
 from app.schemas import (
     LinkedInAttemptOut,
+    LinkedInDirectTokenRequest,
     LinkedInDisconnectResponse,
     LinkedInOAuthStartResponse,
     LinkedInPublishRequest,
@@ -78,6 +79,19 @@ def oauth_callback(
 
 @router.get("/linkedin/status", response_model=LinkedInStatusResponse)
 def status(db: Session = Depends(get_db)) -> LinkedInStatusResponse:
+    return LinkedInStatusResponse(**linkedin_service.get_status(db))
+
+
+@router.post("/linkedin/connect-token", response_model=LinkedInStatusResponse)
+def connect_direct_token(
+    payload: LinkedInDirectTokenRequest,
+    db: Session = Depends(get_db),
+) -> LinkedInStatusResponse:
+    linkedin_service.connect_direct_token(
+        db,
+        access_token=payload.access_token,
+        member_name=payload.member_name,
+    )
     return LinkedInStatusResponse(**linkedin_service.get_status(db))
 
 

@@ -150,6 +150,42 @@ def handle_callback(db: Session, *, code: str, state: str) -> LinkedInAccount:
     return account
 
 
+def connect_direct_token(
+    db: Session,
+    access_token: str,
+    member_name: str | None = None,
+) -> LinkedInAccount:
+    cipher = get_cipher()
+    client = LinkedInClient()
+    try:
+        profile = client.get_userinfo(access_token)
+        member_sub = str(profile.get("sub") or "member:direct")
+        resolved_name = str(profile.get("name") or profile.get("given_name") or member_name or "LinkedIn Member")
+        picture = profile.get("picture")
+    except Exception:
+        member_sub = "member:direct"
+        resolved_name = member_name or "LinkedIn Member"
+        picture = None
+
+    account = (
+        db.query(LinkedInAccount).filter(LinkedInAccount.member_sub == member_sub).one_or_none()
+    )
+    if account is None:
+        account = LinkedInAccount(member_sub=member_sub)
+        db.add(account)
+
+    account.member_name = resolved_name
+    account.member_picture = str(picture) if picture else None
+    account.access_token_encrypted = cipher.encrypt(access_token)
+    account.refresh_token_encrypted = None
+    account.scopes = " ".join(LINKEDIN_SCOPES)
+    account.expires_at = _now() + timedelta(days=60)
+    account.updated_at = _now()
+    db.commit()
+    db.refresh(account)
+    return account
+
+
 def disconnect(db: Session) -> int:
     count = db.query(LinkedInAccount).delete()
     db.commit()
@@ -158,6 +194,12 @@ def disconnect(db: Session) -> int:
 
 def get_status(db: Session) -> dict:
     account = db.query(LinkedInAccount).order_by(LinkedInAccount.connected_at.desc()).first()
+    if account is None and settings.linkedin_access_token and settings.token_encryption_key:
+        try:
+            account = connect_direct_token(db, settings.linkedin_access_token)
+        except Exception:
+            pass
+
     expires_at = _aware(account.expires_at) if account else None
     token_expired = bool(expires_at and expires_at <= _now())
 

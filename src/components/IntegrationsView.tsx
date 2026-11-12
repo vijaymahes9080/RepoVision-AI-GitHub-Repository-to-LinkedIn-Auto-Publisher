@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { ConfigStatus, LinkedInPreflight, LinkedInStatus } from '../types';
 import {
+  connectLinkedInDirectToken,
   disconnectLinkedIn,
   getLinkedInPreflight,
   getLinkedInStatus,
@@ -32,6 +33,10 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ config }) =>
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [showDirectInput, setShowDirectInput] = useState(false);
+  const [directToken, setDirectToken] = useState('');
+  const [directName, setDirectName] = useState('');
+  const [connectingDirect, setConnectingDirect] = useState(false);
 
   const loadPreflight = useCallback(async () => {
     setIsLoading(true);
@@ -181,7 +186,7 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ config }) =>
               </div>
               <div>
                 <h2 className="text-sm font-bold text-white">Language model (optional)</h2>
-                <p className="text-[11px] text-gray-400">OpenAI-compatible API or Ollama</p>
+                <p className="text-[11px] text-gray-400">Gemini, Grok, Groq, OpenRouter, DeepSeek or Ollama</p>
               </div>
             </div>
             <span
@@ -205,12 +210,7 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ config }) =>
               <span className="font-mono text-gray-200">{config?.llm_model ?? 'none'}</span>
             </div>
             <p className="text-[11px] text-gray-400 leading-relaxed">
-              Configure <span className="font-mono text-gray-300">LLM_PROVIDER</span>,{' '}
-              <span className="font-mono text-gray-300">OPENAI_API_KEY</span>, and{' '}
-              <span className="font-mono text-gray-300">OPENAI_MODEL</span> on the server, or use
-              Ollama with <span className="font-mono text-gray-300">OLLAMA_BASE_URL</span> and{' '}
-              <span className="font-mono text-gray-300">OLLAMA_MODEL</span>. Without a provider,
-              drafts use the deterministic evidence-linked generator.
+              Configure <span className="font-mono text-gray-300">LLM_PROVIDER</span> (<span className="text-gray-200">gemini</span>, <span className="text-gray-200">grok</span>, <span className="text-gray-200">groq</span>, <span className="text-gray-200">openrouter</span>, <span className="text-gray-200">deepseek</span>, <span className="text-gray-200">openai</span>, or <span className="text-gray-200">ollama</span>) and its corresponding API key on the server. Without an external provider, drafts use the deterministic evidence-linked generator.
             </p>
           </div>
         </div>

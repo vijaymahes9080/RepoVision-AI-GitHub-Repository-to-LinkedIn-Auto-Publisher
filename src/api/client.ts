@@ -90,6 +90,16 @@ export function startLinkedInOAuth(): Promise<LinkedInOAuthStart> {
   return request<LinkedInOAuthStart>('/linkedin/oauth/start', { method: 'POST' });
 }
 
+export function connectLinkedInDirectToken(payload: {
+  access_token: string;
+  member_name?: string;
+}): Promise<LinkedInStatus> {
+  return request<LinkedInStatus>('/linkedin/connect-token', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export function disconnectLinkedIn(): Promise<{ disconnected: number; connected: boolean }> {
   return request('/linkedin/disconnect', { method: 'POST' });
 }

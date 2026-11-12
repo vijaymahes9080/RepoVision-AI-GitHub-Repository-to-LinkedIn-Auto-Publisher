@@ -283,6 +283,11 @@ class LinkedInStatusResponse(BaseModel):
     required_scopes: list[str] = Field(default_factory=list)
 
 
+class LinkedInDirectTokenRequest(BaseModel):
+    access_token: str = Field(min_length=10)
+    member_name: str | None = None
+
+
 class LinkedInPublishRequest(BaseModel):
     draft_id: str
     confirm: bool = False
