@@ -108,6 +108,7 @@ async def unhandled_error_handler(request: Request, exc: Exception):
     )
 
 
+app.include_router(health.router)
 app.include_router(health.router, prefix=settings.api_prefix)
 app.include_router(config.router, prefix=settings.api_prefix)
 app.include_router(analyses.router, prefix=settings.api_prefix)

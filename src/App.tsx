@@ -43,6 +43,10 @@ function errorMessage(error: unknown): string {
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('analyzer');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = window.localStorage.getItem('repovision.theme');
+    return saved === 'dark' ? 'dark' : 'light';
+  });
   const [config, setConfig] = useState<ConfigStatus | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
   const [run, setRun] = useState<AnalysisRun | null>(null);
@@ -70,6 +74,19 @@ export function App() {
       setConfigError(errorMessage(error));
     }
   }, []);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    window.localStorage.setItem('repovision.theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   useEffect(() => {
     void loadConfig();
@@ -295,12 +312,14 @@ export function App() {
   const openAdmin = () => setActiveTab('admin');
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 font-sans flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 font-sans flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200">
       <Navbar
         config={config}
         configError={configError}
         activeRepoName={analysis ? `${analysis.repo.owner}/${analysis.repo.name}` : undefined}
         isAnalyzing={isStarting || runStatus === 'queued' || runStatus === 'running'}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         onOpenAdmin={openAdmin}
         onRefreshConfig={() => void loadConfig()}
       />

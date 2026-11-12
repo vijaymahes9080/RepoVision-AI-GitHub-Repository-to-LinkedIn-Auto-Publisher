@@ -103,9 +103,10 @@ def wait_for_run(client, run_id: str) -> dict:
 
 
 def test_health_and_config_are_honest(client):
-    health = client.get("/api/v1/health")
-    assert health.status_code == 200
-    assert health.json()["status"] == "ok"
+    for path in ("/api/v1/health", "/health", "/healthz"):
+        health = client.get(path)
+        assert health.status_code == 200
+        assert health.json()["status"] == "ok"
 
     config_response = client.get("/api/v1/config/status")
     assert config_response.status_code == 200
