@@ -1,4 +1,5 @@
 from app.services.linkedin.service import (
+    connect_direct_token,
     disconnect,
     get_status,
     handle_callback,
@@ -8,6 +9,7 @@ from app.services.linkedin.service import (
 )
 
 __all__ = [
+    "connect_direct_token",
     "disconnect",
     "get_status",
     "handle_callback",

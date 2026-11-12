@@ -202,12 +202,14 @@ def get_status(db: Session) -> dict:
 
     expires_at = _aware(account.expires_at) if account else None
     token_expired = bool(expires_at and expires_at <= _now())
+    configured = bool(settings.linkedin_ready or (account and settings.token_encryption_key))
+    publishing_allowed = bool(settings.linkedin_enabled and (settings.linkedin_ready or account))
 
     if not settings.linkedin_enabled:
         reason = "LINKEDIN_ENABLED is false. Real posting stays disabled until you opt in."
-    elif not settings.linkedin_ready:
+    elif not configured and not account:
         reason = (
-            "LinkedIn OAuth is not configured. Add client credentials and TOKEN_ENCRYPTION_KEY."
+            "LinkedIn OAuth is not configured. Add client credentials and TOKEN_ENCRYPTION_KEY or connect direct token."
         )
     elif account is None:
         reason = "Connect a LinkedIn member account to publish."
@@ -217,14 +219,14 @@ def get_status(db: Session) -> dict:
         reason = "Ready to publish with explicit confirmation."
 
     return {
-        "configured": settings.linkedin_ready,
-        "publishing_enabled": settings.linkedin_publishing_allowed,
+        "configured": configured,
+        "publishing_enabled": publishing_allowed,
         "connected": account is not None,
         "member_name": account.member_name if account else None,
         "member_picture": account.member_picture if account else None,
         "scopes": account.scopes.split() if account and account.scopes else LINKEDIN_SCOPES,
         "expires_at": expires_at,
-        "can_publish": settings.linkedin_publishing_allowed and account is not None,
+        "can_publish": publishing_allowed and account is not None,
         "reason": reason,
         "required_scopes": LINKEDIN_SCOPES,
     }
